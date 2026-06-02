@@ -415,10 +415,11 @@
       document.getElementById('m-media').textContent=fNum(mediaFrota,1)+' km/L';
 
       const veiculos=TAGS.map(t=>calcVeiculo(lista,t));
-      const maxGasto=Math.max(...veiculos.map(v=>v.valor),0.01);
+      const somaGasto=veiculos.reduce((s,v)=>s+v.valor,0);
+      const baseGasto=somaGasto>0?somaGasto:0.01;
 
       document.getElementById('cards-veiculo').innerHTML=veiculos.map((v,i)=>{
-        const pct=Math.round(v.valor/maxGasto*100);
+        const pct=Math.round(v.valor/baseGasto*100);
         const bcls=v.combMain==='Diesel'?'badge-d':v.combMain==='Gasolina'?'badge-g':'badge-e';
         return`<div class="cv-card"><div class="cv-top"><div><div class="cv-tag">${v.tag}</div><div class="cv-placa">${v.placa}</div></div><span class="${bcls}">${v.combMain}</span></div><div class="cv-stats"><div class="cv-stat"><div class="cv-stat-val">${fNum(v.media,1)}</div><div class="cv-stat-lbl">km/L</div></div><div class="cv-stat"><div class="cv-stat-val">${fNum(v.totalKm,0)}</div><div class="cv-stat-lbl">km</div></div><div class="cv-stat"><div class="cv-stat-val" style="font-size:12px">${fBRL(v.valor)}</div><div class="cv-stat-lbl">gasto</div></div></div><div class="cv-bar-label"><span>participação no gasto</span><span>${pct}%</span></div><div class="cv-bar-track"><div class="cv-bar-fill" style="width:${pct}%;background:${CORES[i]}"></div></div></div>`;
       }).join('');
