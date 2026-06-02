@@ -296,7 +296,8 @@
         window[cbName]=function(data){
           clearTimeout(timer);cleanup();
           if(data&&data.ok&&data.registros&&data.registros.length){
-            TODOS_RECS=data.registros.map(function(r){
+            // Mapear registros
+            var mapeados = data.registros.map(function(r){
               return{
                 id:   r['ID'],
                 data: normalizarData(r['DATA']||r['Data']||r['data']||''),
@@ -304,15 +305,29 @@
                 placa:String(r['PLACA']||r['Placa']||''),
                 motorista:   String(r['MOTORISTA']||r['Motorista']||''),
                 combustivel: String(r['COMBUSTÍVEL']||r['COMBUSTIVEL']||r['Combustivel']||r['Combustível']||''),
-                km:     parseFloat(r['KM ATUAL']    ||r['KM Atual']    ||r['Km Atual']   ||0)||0,
-                kmPerc: parseFloat(r['KM PERCORRIDO']||r['KM Percorrido']||r['Km Percorrido']||0)||0,
+                km:     parseFloat(r['KM ATUAL']    ||r['KM Atual']    ||0)||0,
+                kmPerc: parseFloat(r['KM PERCORRIDO']||r['KM Percorrido']||r['KM percorrido']||0)||0,
                 litros: parseFloat(r['LITROS']      ||r['Litros']      ||0)||0,
                 preco:  parseFloat(r['PREÇO R$/L']  ||r['Preço R$/L']  ||r['PRECO R$/L'] ||r['Preco por L']||0)||0,
                 valor:  parseFloat(r['VALOR TOTAL'] ||r['Valor Total'] ||r['valor']      ||0)||0
               };
             });
-            console.log('Dados carregados:', TODOS_RECS.length, 'registros');
-            console.log('Exemplo:', TODOS_RECS[0]);
+            // Calcular KM percorrido no dashboard quando vier zerado do servidor
+            // Ordenar por data+id crescente para calcular diferença corretamente
+            mapeados.sort(function(a,b){return String(a.id).localeCompare(String(b.id));});
+            var kmUlt = {};
+            mapeados.forEach(function(r){
+              if(r.km > 0){
+                if(r.kmPerc <= 0 && kmUlt[r.tag] && kmUlt[r.tag] > 0){
+                  r.kmPerc = r.km - kmUlt[r.tag];
+                  if(r.kmPerc < 0) r.kmPerc = 0;
+                }
+                kmUlt[r.tag] = r.km;
+              }
+            });
+            // Reordenar por id decrescente (mais recente primeiro)
+            mapeados.sort(function(a,b){return String(b.id).localeCompare(String(a.id));});
+            TODOS_RECS = mapeados;
           } else {
             TODOS_RECS=[];
             console.log('API retornou vazio ou erro:', data);
@@ -400,7 +415,7 @@
       document.getElementById('m-media').textContent=fNum(mediaFrota,1)+' km/L';
 
       const veiculos=TAGS.map(t=>calcVeiculo(lista,t));
-      const maxGasto=Math.max(...veiculos.map(v=>v.valor),1);
+      const maxGasto=Math.max(...veiculos.map(v=>v.valor),0.01);
 
       document.getElementById('cards-veiculo').innerHTML=veiculos.map((v,i)=>{
         const pct=Math.round(v.valor/maxGasto*100);
@@ -418,7 +433,7 @@
       const baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toLocaleString('pt-BR')}`}}},scales:{x:{grid:{display:false},ticks:{color:'#8e97a8',font:{size:11},autoSkip:false}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e97a8',font:{size:10}}}}};
 
       if(chartGasto)chartGasto.destroy();
-      chartGasto=new Chart(document.getElementById('chart-gasto'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?gastoData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
+      chartGasto=new Chart(document.getElementById('chart-gasto'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?gastoData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>'R$ '+v.toLocaleString('pt-BR')}}}}});
 
       if(chartKm)chartKm.destroy();
       chartKm=new Chart(document.getElementById('chart-km'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?kmData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v.toLocaleString('pt-BR')}}}}});
