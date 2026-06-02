@@ -3,29 +3,16 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="theme-color" content="#28334A"/>
   <title>Dashboard Combustível — JF Brasil</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css"/>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    :root{
-      --azul:#28334A;--azul-mid:#3d4f6e;--azul-light:#e8ecf2;
-      --amarelo:#FECB00;--amarelo-dark:#c9a100;
-      --branco:#fff;--cinza-bg:#f5f6f8;--cinza-card:#fff;
-      --cinza-borda:#e2e5ea;--cinza-borda2:#d0d4db;
-      --texto:#1a2130;--texto-sec:#5a6478;--texto-ter:#8e97a8;
-      --verde:#1D9E75;--verde-bg:#f0fdf4;
-      --vermelho:#dc2626;--vermelho-bg:#fef2f2;
-      --azul-info:#2563eb;
-      --radius:10px;--radius-lg:14px;
-      --shadow:0 1px 3px rgba(0,0,0,.08);
-    }
+    :root{--azul:#28334A;--azul-mid:#3d4f6e;--azul-light:#e8ecf2;--amarelo:#FECB00;--amarelo-dark:#c9a100;--branco:#fff;--cinza-bg:#f5f6f8;--cinza-card:#fff;--cinza-borda:#e2e5ea;--cinza-borda2:#d0d4db;--texto:#1a2130;--texto-sec:#5a6478;--texto-ter:#8e97a8;--verde:#1D9E75;--verde-bg:#f0fdf4;--vermelho:#dc2626;--vermelho-bg:#fef2f2;--azul-info:#2563eb;--radius:10px;--radius-lg:14px;--shadow:0 1px 3px rgba(0,0,0,.08)}
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
     html{scroll-behavior:smooth}
     body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--cinza-bg);color:var(--texto);font-size:15px;line-height:1.5;min-height:100vh}
-
-    /* LOGIN */
     .login-overlay{position:fixed;inset:0;background:var(--azul);z-index:99999;display:flex;align-items:center;justify-content:center;padding:1.5rem}
     .login-box{background:#fff;border-radius:var(--radius-lg);padding:2rem 1.5rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
     .login-logo{display:flex;justify-content:center;margin-bottom:1.5rem}
@@ -45,8 +32,6 @@
     .login-err.show{display:block}
     .login-footer{text-align:center;font-size:11px;color:var(--texto-ter);margin-top:1.25rem}
     .login-footer strong{color:var(--azul)}
-
-    /* TOPBAR */
     .topbar{background:var(--azul);color:#fff;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
     .topbar-left{display:flex;align-items:center;gap:10px}
     .topbar-logo{width:32px;height:32px;background:var(--amarelo);border-radius:8px;display:flex;align-items:center;justify-content:center}
@@ -55,11 +40,7 @@
     .topbar-sub{font-size:11px;color:rgba(255,255,255,.6)}
     .logout-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:var(--radius);padding:6px 12px;color:rgba(255,255,255,.85);cursor:pointer;font-size:13px;font-family:'IBM Plex Sans',sans-serif;transition:background .15s}
     .logout-btn:hover{background:rgba(255,255,255,.2)}
-
-    /* CONTAINER */
     .container{max-width:1100px;margin:0 auto;padding:1.25rem 1rem}
-
-    /* FILTROS */
     .filtro-section{background:var(--cinza-card);border:1px solid var(--cinza-borda);border-radius:var(--radius-lg);padding:1.125rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
     .filtro-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
     .db-title{font-size:18px;font-weight:600;color:var(--azul);margin:0}
@@ -77,8 +58,6 @@
     .btn-filtrar:hover{background:var(--azul-light);border-color:var(--azul)}
     .periodo-ativo{font-size:12px;color:var(--texto-sec);text-align:right}
     .periodo-ativo strong{color:var(--azul)}
-
-    /* STATS */
     .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
     @media(max-width:640px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
     .stat-card{background:var(--azul);border-radius:var(--radius);padding:.85rem 1.1rem}
@@ -94,13 +73,9 @@
     .stat-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
     .stat-card.white .stat-sub{color:var(--texto-ter)}
     .stat-card.yellow .stat-sub{color:rgba(40,51,74,.5)}
-
-    /* CARD */
     .card{background:var(--cinza-card);border:1px solid var(--cinza-borda);border-radius:var(--radius-lg);padding:1.125rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
     .card-title{font-size:11px;font-weight:600;color:var(--texto-sec);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;display:flex;align-items:center;gap:6px}
     .card-title i{font-size:14px;color:var(--azul)}
-
-    /* CARDS VEÍCULO */
     .cards-veiculo{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
     @media(max-width:860px){.cards-veiculo{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:480px){.cards-veiculo{grid-template-columns:1fr}}
@@ -118,16 +93,12 @@
     .badge-d{background:#dbeafe;color:#1d4ed8;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
     .badge-g{background:#fef9c3;color:#854d0e;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
     .badge-e{background:#dcfce7;color:#166534;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px}
-
-    /* CHARTS */
     .charts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:1.25rem}
     @media(max-width:860px){.charts-grid{grid-template-columns:1fr}}
     .chart-wrap{position:relative;width:100%}
     .legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:12px;color:var(--texto-sec)}
     .leg-item{display:flex;align-items:center;gap:5px}
     .leg-sq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
-
-    /* TABELA */
     .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
     table.tbl{width:100%;border-collapse:collapse;font-size:13px}
     .tbl th{font-size:11px;font-weight:600;color:var(--texto-ter);text-align:left;padding:9px 10px;border-bottom:1px solid var(--cinza-borda);white-space:nowrap;background:var(--cinza-bg)}
@@ -135,29 +106,21 @@
     .tbl tr:last-child td{border-bottom:none}
     .tbl tr:hover td{background:var(--cinza-bg)}
     .empty{text-align:center;padding:2.5rem 1rem;color:var(--texto-ter);font-size:14px}
-
-    /* EXPORT */
     .btn-export{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border-radius:var(--radius);border:1px solid var(--cinza-borda2);background:#fff;color:var(--texto);transition:background .15s}
     .btn-export:hover{background:var(--cinza-bg)}
-
-    /* FOOTER */
     .footer{text-align:center;padding:1.5rem 1rem 2rem;font-size:11px;color:var(--texto-ter)}
     .footer strong{color:var(--azul)}
-
     input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   </style>
 </head>
 <body>
 
-  <!-- LOGIN -->
   <div class="login-overlay" id="login-overlay">
     <div class="login-box">
       <div class="login-logo"><div class="login-logo-inner"><i class="ti ti-chart-bar"></i></div></div>
       <div class="login-title">Dashboard de Combustível</div>
       <div class="login-sub">JF Brasil · Complexo Carajás</div>
-      <div style="text-align:center;margin-bottom:1.5rem">
-        <span class="login-badge"><i class="ti ti-shield-lock"></i> Acesso restrito</span>
-      </div>
+      <div style="text-align:center;margin-bottom:1.5rem"><span class="login-badge"><i class="ti ti-shield-lock"></i> Acesso restrito</span></div>
       <div class="login-err" id="login-err">Senha incorreta. Tente novamente.</div>
       <div class="login-field">
         <label class="login-label" for="login-senha">Senha de acesso</label>
@@ -175,7 +138,6 @@
     </div>
   </div>
 
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-left">
       <div class="topbar-logo"><i class="ti ti-chart-bar"></i></div>
@@ -191,8 +153,6 @@
   </div>
 
   <div class="container">
-
-    <!-- FILTROS -->
     <div class="filtro-section">
       <div class="filtro-header">
         <div>
@@ -211,66 +171,44 @@
             <input type="date" id="f-ini" class="int-input"/>
             <span class="int-label">até</span>
             <input type="date" id="f-fim" class="int-input"/>
-            <button class="btn-filtrar" onclick="aplicarIntervalo()">
-              <i class="ti ti-search"></i> Filtrar
-            </button>
+            <button class="btn-filtrar" onclick="aplicarIntervalo()"><i class="ti ti-search"></i> Filtrar</button>
           </div>
           <p class="periodo-ativo" id="periodo-ativo">—</p>
         </div>
       </div>
     </div>
 
-    <!-- STATS GLOBAIS -->
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label"><i class="ti ti-currency-dollar"></i> Total gasto</div>
-        <div class="stat-value" id="m-gasto">—</div>
-        <div class="stat-sub">no período</div>
-      </div>
-      <div class="stat-card yellow">
-        <div class="stat-label"><i class="ti ti-gas-station"></i> Total litros</div>
-        <div class="stat-value" id="m-litros">—</div>
-        <div class="stat-sub">abastecidos</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label"><i class="ti ti-road"></i> KM percorrido</div>
-        <div class="stat-value" id="m-km">—</div>
-        <div class="stat-sub">total da frota</div>
-      </div>
-      <div class="stat-card white">
-        <div class="stat-label"><i class="ti ti-chart-line"></i> Média frota</div>
-        <div class="stat-value" id="m-media">—</div>
-        <div class="stat-sub">km/L geral</div>
-      </div>
+      <div class="stat-card"><div class="stat-label"><i class="ti ti-currency-dollar"></i> Total gasto</div><div class="stat-value" id="m-gasto">—</div><div class="stat-sub">no período</div></div>
+      <div class="stat-card yellow"><div class="stat-label"><i class="ti ti-gas-station"></i> Total litros</div><div class="stat-value" id="m-litros">—</div><div class="stat-sub">abastecidos</div></div>
+      <div class="stat-card"><div class="stat-label"><i class="ti ti-road"></i> KM percorrido</div><div class="stat-value" id="m-km">—</div><div class="stat-sub">total da frota</div></div>
+      <div class="stat-card white"><div class="stat-label"><i class="ti ti-chart-line"></i> Média frota</div><div class="stat-value" id="m-media">—</div><div class="stat-sub">km/L geral</div></div>
     </div>
 
-    <!-- CARDS VEÍCULO -->
     <div class="card">
       <div class="card-title"><i class="ti ti-car"></i> Desempenho por veículo</div>
       <div class="cards-veiculo" id="cards-veiculo"></div>
     </div>
 
-    <!-- GRÁFICOS -->
     <div class="charts-grid">
       <div class="card" style="margin-bottom:0">
         <div class="card-title"><i class="ti ti-chart-bar"></i> Gasto (R$)</div>
         <div class="legend" id="leg-gasto"></div>
-        <div class="chart-wrap" style="height:200px"><canvas id="chart-gasto" role="img" aria-label="Gasto por veículo em reais"></canvas></div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-gasto"></canvas></div>
       </div>
       <div class="card" style="margin-bottom:0">
         <div class="card-title"><i class="ti ti-road"></i> Distância (km)</div>
         <div class="legend" id="leg-km"></div>
-        <div class="chart-wrap" style="height:200px"><canvas id="chart-km" role="img" aria-label="KM percorrido por veículo"></canvas></div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-km"></canvas></div>
       </div>
       <div class="card" style="margin-bottom:0">
         <div class="card-title"><i class="ti ti-trending-up"></i> Consumo (km/L)</div>
         <div class="legend" id="leg-media"></div>
-        <div class="chart-wrap" style="height:200px"><canvas id="chart-media" role="img" aria-label="Média de consumo por veículo"></canvas></div>
+        <div class="chart-wrap" style="height:200px"><canvas id="chart-media"></canvas></div>
       </div>
     </div>
     <div style="margin-bottom:1.25rem"></div>
 
-    <!-- TABELA DETALHADA -->
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
         <div class="card-title" style="margin:0"><i class="ti ti-list"></i> Detalhamento por veículo</div>
@@ -278,52 +216,30 @@
       </div>
       <div class="tbl-wrap">
         <table class="tbl">
-          <thead><tr>
-            <th>Veículo</th><th>Placa</th><th>Abastecimentos</th>
-            <th>Litros</th><th>KM percorrido</th><th>Média km/L</th>
-            <th>Custo R$/km</th><th>Total gasto</th>
-          </tr></thead>
+          <thead><tr><th>Veículo</th><th>Placa</th><th>Abastecimentos</th><th>Litros</th><th>KM percorrido</th><th>Média km/L</th><th>Custo R$/km</th><th>Total gasto</th></tr></thead>
           <tbody id="dt-body"></tbody>
         </table>
       </div>
     </div>
 
-    <div class="footer">
-      <strong>JF Brasil Engenharia</strong> · Complexo Carajás<br>
-      Dashboard de Controle de Combustível · GGES / Geotecnia Operacional
-    </div>
-
+    <div class="footer"><strong>JF Brasil Engenharia</strong> · Complexo Carajás<br>Dashboard de Controle de Combustível · GGES / Geotecnia Operacional</div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
-    // ============================================================
-    //  ⚙️ CONFIGURAÇÃO
-    // ============================================================
+    // ⚙️ CONFIGURAÇÃO
     const SENHA_CORRETA = 'JF@2026';
     const SESSION_KEY   = 'jfb_dash_session';
     const SESSION_TTL   = 8 * 60 * 60 * 1000;
+    const API_URL       = 'https://script.google.com/macros/s/AKfycbxAVjjFesEX81FGz7yg-D_1gfqj5TMfQwjZ2_Ick_jXAxdOcp4HIoMeKe_HIq3o_57f/exec';
 
-    // URL da API (Google Apps Script) — cole aqui se quiser carregar dados reais
-    // Deixe vazio para usar dados de demonstração
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxAVjjFesEX81FGz7yg-D_1gfqj5TMfQwjZ2_Ick_jXAxdOcp4HIoMeKe_HIq3o_57f/exec';
-
-    // ============================================================
     const PLACAS = {JJ29:'SIV6B53',JJ30:'RVK0J68',JJ70:'QXO5J07',JJ71:'SYT2C06'};
     const TAGS   = ['JJ29','JJ30','JJ70','JJ71'];
     const CORES  = ['#28334A','#378ADD','#1D9E75','#BA7517'];
 
-    // ============================================================
-    //  AUTH
-    // ============================================================
+    // AUTH
     function verificarSessao(){
-      try{
-        const s=JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null');
-        if(s&&s.token===btoa(SENHA_CORRETA)&&(Date.now()-s.ts)<SESSION_TTL){
-          document.getElementById('login-overlay').style.display='none';
-          return true;
-        }
-      }catch(e){}
+      try{const s=JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null');if(s&&s.token===btoa(SENHA_CORRETA)&&(Date.now()-s.ts)<SESSION_TTL){document.getElementById('login-overlay').style.display='none';return true;}}catch(e){}
       return false;
     }
     function fazerLogin(){
@@ -338,93 +254,74 @@
         errEl.className='login-err show';
         document.getElementById('login-senha').value='';
         document.getElementById('login-senha').focus();
-        if(navigator.vibrate)navigator.vibrate([100,50,100]);
       }
     }
-    function fazerLogout(){
-      if(!confirm('Deseja sair do dashboard?'))return;
-      sessionStorage.removeItem(SESSION_KEY);
-      location.reload();
-    }
-    function toggleSenha(){
-      const inp=document.getElementById('login-senha');
-      const ico=document.getElementById('eye-icon');
-      if(inp.type==='password'){inp.type='text';ico.className='ti ti-eye-off';}
-      else{inp.type='password';ico.className='ti ti-eye';}
+    function fazerLogout(){if(!confirm('Deseja sair?'))return;sessionStorage.removeItem(SESSION_KEY);location.reload();}
+    function toggleSenha(){const inp=document.getElementById('login-senha');const ico=document.getElementById('eye-icon');if(inp.type==='password'){inp.type='text';ico.className='ti ti-eye-off';}else{inp.type='password';ico.className='ti ti-eye';}}
+
+    // Normalizar data — converte qualquer formato para YYYY-MM-DD
+    function normalizarData(val) {
+      if (!val) return '';
+      var s = String(val);
+      // Formato ISO com hora: 2026-06-01T03:00:00.000Z
+      if (s.length > 10 && s.indexOf('T') > -1) {
+        return s.substring(0, 10);
+      }
+      // Objeto Date do Google Sheets (número serial)
+      if (typeof val === 'number') {
+        var d = new Date(Math.round((val - 25569) * 86400 * 1000));
+        return d.toISOString().substring(0, 10);
+      }
+      // Já está no formato YYYY-MM-DD
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+      return s.substring(0, 10);
     }
 
-    // ============================================================
-    //  DADOS
-    // ============================================================
-    function gerarDemoData(){
-      const recs=[];
-      const motoristas=['Bruno L. Bastos','Hugo C. Paiva','Joabe P. Matos','Marcos H. Pires','Oziel A. Silva'];
-      const combs=['Diesel','Diesel','Diesel','Gasolina'];
-      const precos=[6.89,6.89,6.89,7.25];
-      const kmBase={JJ29:41200,JJ30:38500,JJ70:52100,JJ71:29800};
-      const hoje=new Date();
-      TAGS.forEach((tag,ti)=>{
-        let km=kmBase[tag];
-        for(let i=179;i>=0;i--){
-          if(Math.random()>.55)continue;
-          const d=new Date(hoje);d.setDate(hoje.getDate()-i);
-          const lit=+(28+Math.random()*30).toFixed(2);
-          const prec=+(precos[ti]+(Math.random()-.5)*.3).toFixed(2);
-          const perc=Math.round(180+Math.random()*200);
-          km+=perc;
-          recs.push({
-            id:d.getTime()+ti,
-            data:d.toISOString().split('T')[0],
-            tag,placa:PLACAS[tag],
-            motorista:motoristas[Math.floor(Math.random()*motoristas.length)],
-            combustivel:combs[ti],
-            km,kmPerc:perc,
-            litros:lit,preco:prec,
-            valor:+(lit*prec).toFixed(2)
-          });
-        }
-      });
-      return recs.sort((a,b)=>b.data.localeCompare(a.data));
-    }
-
+    // DADOS
     let TODOS_RECS = [];
 
     function carregarDados(){
       return new Promise(function(resolve){
         if(!API_URL){
-          try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:gerarDemoData();}catch(e){TODOS_RECS=gerarDemoData();}
+          try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:[];}catch(e){TODOS_RECS=[];}
           resolve();return;
         }
         var cbName='jfb_cb_'+Date.now();
         var script=document.createElement('script');
         var timer=setTimeout(function(){
           cleanup();
-          try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:gerarDemoData();}catch(e){TODOS_RECS=gerarDemoData();}
+          try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:[];}catch(e){TODOS_RECS=[];}
           resolve();
-        },12000);
+        },15000);
         window[cbName]=function(data){
           clearTimeout(timer);cleanup();
           if(data&&data.ok&&data.registros&&data.registros.length){
             TODOS_RECS=data.registros.map(function(r){
               return{
-                id:r['ID'],data:r['Data'],tag:r['TAG'],placa:r['Placa'],
-                motorista:r['Motorista'],
-                combustivel:r['Combustivel']||r['Combustível']||'',
-                km:parseFloat(r['KM Atual']||0),
-                kmPerc:parseFloat(r['KM Percorrido']||0),
-                litros:parseFloat(r['Litros']||0),
-                preco:parseFloat(r['Preco por L']||r['Preço R$/L']||0),
-                valor:parseFloat(r['Valor Total']||0)
+                id:   r['ID'],
+                data: normalizarData(r['DATA']||r['Data']||r['data']||''),
+                tag:  String(r['TAG']||r['Tag']||''),
+                placa:String(r['PLACA']||r['Placa']||''),
+                motorista:   String(r['MOTORISTA']||r['Motorista']||''),
+                combustivel: String(r['COMBUSTÍVEL']||r['COMBUSTIVEL']||r['Combustivel']||r['Combustível']||''),
+                km:     parseFloat(r['KM ATUAL']    ||r['KM Atual']    ||r['Km Atual']   ||0)||0,
+                kmPerc: parseFloat(r['KM PERCORRIDO']||r['KM Percorrido']||r['Km Percorrido']||0)||0,
+                litros: parseFloat(r['LITROS']      ||r['Litros']      ||0)||0,
+                preco:  parseFloat(r['PREÇO R$/L']  ||r['Preço R$/L']  ||r['PRECO R$/L'] ||r['Preco por L']||0)||0,
+                valor:  parseFloat(r['VALOR TOTAL'] ||r['Valor Total'] ||r['valor']      ||0)||0
               };
             });
+            console.log('Dados carregados:', TODOS_RECS.length, 'registros');
+            console.log('Exemplo:', TODOS_RECS[0]);
           } else {
-            try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:gerarDemoData();}catch(e){TODOS_RECS=gerarDemoData();}
+            TODOS_RECS=[];
+            console.log('API retornou vazio ou erro:', data);
           }
           resolve();
         };
         script.onerror=function(){
           clearTimeout(timer);cleanup();
-          try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:gerarDemoData();}catch(e){TODOS_RECS=gerarDemoData();}
+          try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:[];}catch(e){TODOS_RECS=[];}
           resolve();
         };
         function cleanup(){delete window[cbName];if(script.parentNode)script.parentNode.removeChild(script);}
@@ -433,17 +330,13 @@
       });
     }
 
-    // ============================================================
-    //  HELPERS
-    // ============================================================
+    // HELPERS
     function fBRL(v){return(+v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
     function fNum(v,d=0){return(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});}
-    function fDataBR(s){if(!s)return'—';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`;}
+    function fDataBR(s){if(!s||s.length<10)return'—';var p=s.substring(0,10).split('-');return p[2]+'/'+p[1]+'/'+p[0];}
     function fmt(d){return d.toISOString().split('T')[0];}
 
-    // ============================================================
-    //  PERÍODO
-    // ============================================================
+    // PERÍODO
     let iniAtual='', fimAtual='';
     let chartGasto=null, chartKm=null, chartMedia=null;
 
@@ -453,11 +346,7 @@
       const hoje=new Date();
       let ini,fim=fmt(hoje);
       if(p==='mes'){ini=fmt(new Date(hoje.getFullYear(),hoje.getMonth(),1));}
-      else if(p==='mes_ant'){
-        const d=new Date(hoje.getFullYear(),hoje.getMonth()-1,1);
-        const df=new Date(hoje.getFullYear(),hoje.getMonth(),0);
-        ini=fmt(d);fim=fmt(df);
-      }
+      else if(p==='mes_ant'){const d=new Date(hoje.getFullYear(),hoje.getMonth()-1,1);const df=new Date(hoje.getFullYear(),hoje.getMonth(),0);ini=fmt(d);fim=fmt(df);}
       else if(p==='ano'){ini=fmt(new Date(hoje.getFullYear(),0,1));}
       else{ini='2000-01-01';}
       document.getElementById('f-ini').value=ini;
@@ -476,36 +365,34 @@
       renderizar(ini,fim);
     }
 
-    // ============================================================
-    //  RENDERIZAR
-    // ============================================================
+    // RENDERIZAR
     function calcVeiculo(lista,tag){
       const regs=lista.filter(r=>r.tag===tag);
-      const litros=regs.reduce((s,r)=>s+parseFloat(r.litros||0),0);
-      const valor=regs.reduce((s,r)=>s+parseFloat(r.valor||0),0);
-      const totalKm=regs.filter(r=>r.kmPerc>0).reduce((s,r)=>s+parseFloat(r.kmPerc||0),0);
+      const litros=regs.reduce((s,r)=>s+(r.litros||0),0);
+      const valor=regs.reduce((s,r)=>s+(r.valor||0),0);
+      const totalKm=regs.filter(r=>r.kmPerc>0).reduce((s,r)=>s+(r.kmPerc||0),0);
       const media=litros>0&&totalKm>0?totalKm/litros:0;
       const rkm=valor>0&&totalKm>0?valor/totalKm:0;
       const combFreq={};
-      regs.forEach(r=>{combFreq[r.combustivel]=(combFreq[r.combustivel]||0)+1;});
+      regs.forEach(r=>{if(r.combustivel)combFreq[r.combustivel]=(combFreq[r.combustivel]||0)+1;});
       const combMain=Object.entries(combFreq).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
       return{tag,placa:PLACAS[tag],regs:regs.length,litros,valor,totalKm,media,rkm,combMain};
     }
 
     function renderizar(ini,fim){
-      const lista=TODOS_RECS.filter(r=>(!ini||r.data>=ini)&&(!fim||r.data<=fim));
+      const lista=TODOS_RECS.filter(r=>{
+        if(!r.data) return false;
+        const d=r.data.substring(0,10);
+        return (!ini||d>=ini)&&(!fim||d<=fim);
+      });
 
-      // Label período
-      const lblPeriodo = ini==='2000-01-01'
-        ? 'Todo o período · '+lista.length+' registros'
-        : `${fDataBR(ini)} até ${fDataBR(fim)} · ${lista.length} registro${lista.length!==1?'s':''}`;
-      document.getElementById('periodo-ativo').innerHTML=`<strong>${lblPeriodo}</strong>`;
+      const lbl=ini==='2000-01-01'?'Todo o período · '+lista.length+' registros':`${fDataBR(ini)} até ${fDataBR(fim)} · ${lista.length} registro${lista.length!==1?'s':''}`;
+      document.getElementById('periodo-ativo').innerHTML=`<strong>${lbl}</strong>`;
       document.getElementById('topbar-periodo').textContent=ini==='2000-01-01'?'Todo o período':`${fDataBR(ini)} — ${fDataBR(fim)}`;
 
-      // Stats globais
-      const totalGasto=lista.reduce((s,r)=>s+parseFloat(r.valor||0),0);
-      const totalLitros=lista.reduce((s,r)=>s+parseFloat(r.litros||0),0);
-      const totalKm=lista.filter(r=>r.kmPerc>0).reduce((s,r)=>s+parseFloat(r.kmPerc||0),0);
+      const totalGasto=lista.reduce((s,r)=>s+(r.valor||0),0);
+      const totalLitros=lista.reduce((s,r)=>s+(r.litros||0),0);
+      const totalKm=lista.filter(r=>r.kmPerc>0).reduce((s,r)=>s+(r.kmPerc||0),0);
       const mediaFrota=totalLitros>0&&totalKm>0?totalKm/totalLitros:0;
       document.getElementById('m-gasto').textContent=fBRL(totalGasto);
       document.getElementById('m-litros').textContent=fNum(totalLitros,0)+' L';
@@ -515,26 +402,12 @@
       const veiculos=TAGS.map(t=>calcVeiculo(lista,t));
       const maxGasto=Math.max(...veiculos.map(v=>v.valor),1);
 
-      // Cards veículo
       document.getElementById('cards-veiculo').innerHTML=veiculos.map((v,i)=>{
         const pct=Math.round(v.valor/maxGasto*100);
         const bcls=v.combMain==='Diesel'?'badge-d':v.combMain==='Gasolina'?'badge-g':'badge-e';
-        return`<div class="cv-card">
-          <div class="cv-top">
-            <div><div class="cv-tag">${v.tag}</div><div class="cv-placa">${v.placa}</div></div>
-            <span class="${bcls}">${v.combMain}</span>
-          </div>
-          <div class="cv-stats">
-            <div class="cv-stat"><div class="cv-stat-val">${fNum(v.media,1)}</div><div class="cv-stat-lbl">km/L</div></div>
-            <div class="cv-stat"><div class="cv-stat-val">${fNum(v.totalKm,0)}</div><div class="cv-stat-lbl">km</div></div>
-            <div class="cv-stat"><div class="cv-stat-val" style="font-size:12px">${fBRL(v.valor)}</div><div class="cv-stat-lbl">gasto</div></div>
-          </div>
-          <div class="cv-bar-label"><span>participação no gasto</span><span>${pct}%</span></div>
-          <div class="cv-bar-track"><div class="cv-bar-fill" style="width:${pct}%;background:${CORES[i]}"></div></div>
-        </div>`;
+        return`<div class="cv-card"><div class="cv-top"><div><div class="cv-tag">${v.tag}</div><div class="cv-placa">${v.placa}</div></div><span class="${bcls}">${v.combMain}</span></div><div class="cv-stats"><div class="cv-stat"><div class="cv-stat-val">${fNum(v.media,1)}</div><div class="cv-stat-lbl">km/L</div></div><div class="cv-stat"><div class="cv-stat-val">${fNum(v.totalKm,0)}</div><div class="cv-stat-lbl">km</div></div><div class="cv-stat"><div class="cv-stat-val" style="font-size:12px">${fBRL(v.valor)}</div><div class="cv-stat-lbl">gasto</div></div></div><div class="cv-bar-label"><span>participação no gasto</span><span>${pct}%</span></div><div class="cv-bar-track"><div class="cv-bar-fill" style="width:${pct}%;background:${CORES[i]}"></div></div></div>`;
       }).join('');
 
-      // Legendas
       const legHTML=TAGS.map((t,i)=>`<span class="leg-item"><span class="leg-sq" style="background:${CORES[i]}"></span>${t}</span>`).join('');
       ['leg-gasto','leg-km','leg-media'].forEach(id=>document.getElementById(id).innerHTML=legHTML);
 
@@ -542,78 +415,33 @@
       const kmData=veiculos.map(v=>Math.round(v.totalKm));
       const mediaData=veiculos.map(v=>+v.media.toFixed(2));
 
-      const baseOpts={
-        responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toLocaleString('pt-BR')}`}}},
-        scales:{
-          x:{grid:{display:false},ticks:{color:'#8e97a8',font:{size:11},autoSkip:false}},
-          y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e97a8',font:{size:10}}}
-        }
-      };
+      const baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toLocaleString('pt-BR')}`}}},scales:{x:{grid:{display:false},ticks:{color:'#8e97a8',font:{size:11},autoSkip:false}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e97a8',font:{size:10}}}}};
 
       if(chartGasto)chartGasto.destroy();
-      chartGasto=new Chart(document.getElementById('chart-gasto'),{
-        type:'bar',
-        data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?gastoData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},
-        options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>'R$'+Math.round(v/1000)+'k'}}}}
-      });
+      chartGasto=new Chart(document.getElementById('chart-gasto'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?gastoData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
 
       if(chartKm)chartKm.destroy();
-      chartKm=new Chart(document.getElementById('chart-km'),{
-        type:'bar',
-        data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?kmData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},
-        options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v.toLocaleString('pt-BR')}}}}
-      });
+      chartKm=new Chart(document.getElementById('chart-km'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?kmData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v.toLocaleString('pt-BR')}}}}});
 
       if(chartMedia)chartMedia.destroy();
-      chartMedia=new Chart(document.getElementById('chart-media'),{
-        type:'bar',
-        data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?mediaData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},
-        options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+' km/L'}}}}
-      });
+      chartMedia=new Chart(document.getElementById('chart-media'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?mediaData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+' km/L'}}}}});
 
-      // Tabela
       const tbody=document.getElementById('dt-body');
       if(!lista.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Nenhum registro no período selecionado.</td></tr>';return;}
-      tbody.innerHTML=veiculos.map(v=>`
-        <tr>
-          <td><strong style="color:var(--azul)">${v.tag}</strong></td>
-          <td style="color:var(--texto-ter);font-size:12px;letter-spacing:.05em">${v.placa}</td>
-          <td>${v.regs}</td>
-          <td>${fNum(v.litros,1)} L</td>
-          <td>${fNum(v.totalKm,0)} km</td>
-          <td><strong>${fNum(v.media,2)} km/L</strong></td>
-          <td style="color:var(--texto-sec)">${v.rkm>0?'R$ '+v.rkm.toFixed(3)+'/km':'—'}</td>
-          <td style="font-weight:600">${fBRL(v.valor)}</td>
-        </tr>`).join('');
+      tbody.innerHTML=veiculos.map(v=>`<tr><td><strong style="color:var(--azul)">${v.tag}</strong></td><td style="color:var(--texto-ter);font-size:12px;letter-spacing:.05em">${v.placa}</td><td>${v.regs}</td><td>${fNum(v.litros,1)} L</td><td>${fNum(v.totalKm,0)} km</td><td><strong>${fNum(v.media,2)} km/L</strong></td><td style="color:var(--texto-sec)">${v.rkm>0?'R$ '+v.rkm.toFixed(3)+'/km':'—'}</td><td style="font-weight:600">${fBRL(v.valor)}</td></tr>`).join('');
     }
 
-    // ============================================================
-    //  EXPORTAR CSV
-    // ============================================================
     function exportarCSV(){
-      const lista=TODOS_RECS.filter(r=>(!iniAtual||r.data>=iniAtual)&&(!fimAtual||r.data<=fimAtual));
+      const lista=TODOS_RECS.filter(r=>{const d=(r.data||'').substring(0,10);return(!iniAtual||d>=iniAtual)&&(!fimAtual||d<=fimAtual);});
       const veiculos=TAGS.map(t=>calcVeiculo(lista,t));
       const h='TAG;Placa;Abastecimentos;Litros;KM Percorrido;Média km/L;R$/km;Total Gasto';
-      const rows=veiculos.map(v=>[
-        v.tag,v.placa,v.regs,
-        v.litros.toFixed(2),
-        Math.round(v.totalKm),
-        v.media.toFixed(2),
-        v.rkm>0?v.rkm.toFixed(3):'',
-        v.valor.toFixed(2)
-      ].join(';'));
+      const rows=veiculos.map(v=>[v.tag,v.placa,v.regs,v.litros.toFixed(2),Math.round(v.totalKm),v.media.toFixed(2),v.rkm>0?v.rkm.toFixed(3):'',v.valor.toFixed(2)].join(';'));
       const csv=[h,...rows].join('\n');
       const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
       const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url;a.download='dashboard_combustivel.csv';a.click();
-      URL.revokeObjectURL(url);
+      const a=document.createElement('a');a.href=url;a.download='dashboard_combustivel.csv';a.click();URL.revokeObjectURL(url);
     }
 
-    // ============================================================
-    //  INICIALIZAR
-    // ============================================================
     async function inicializar(){
       await carregarDados();
       const hoje=new Date();
@@ -625,10 +453,7 @@
       renderizar(ini,fim);
     }
 
-    // Init
-    if(!verificarSessao()){
-      // Aguarda login
-    }
+    if(!verificarSessao()){}
   </script>
 </body>
 </html>
