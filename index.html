@@ -306,7 +306,7 @@
 
     // URL da API (Google Apps Script) — cole aqui se quiser carregar dados reais
     // Deixe vazio para usar dados de demonstração
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxAVjjFesEX81FGz7yg-D_1gfqj5TMfQwjZ2_Ick_jXAxdOcp4HIoMeKe_HIq3o_57f/exec';
+    const API_URL = '';
 
     // ============================================================
     const PLACAS = {JJ29:'SIV6B53',JJ30:'RVK0J68',JJ70:'QXO5J07',JJ71:'SYT2C06'};
@@ -389,29 +389,48 @@
 
     let TODOS_RECS = [];
 
-    async function carregarDados(){
-      // Tenta API real, se configurada
-      if(API_URL){
-        try{
-          const r=await fetch(API_URL+'?action=listar&limit=1000');
-          const d=await r.json();
-          if(d.ok&&d.registros&&d.registros.length){
-            TODOS_RECS=d.registros.map(r=>({
-              id:r['ID'],data:r['Data'],tag:r['TAG'],placa:r['Placa'],
-              motorista:r['Motorista'],combustivel:r['Combustível'],
-              km:parseFloat(r['KM Atual']||0),kmPerc:parseFloat(r['KM Percorrido']||0),
-              litros:parseFloat(r['Litros']||0),preco:parseFloat(r['Preço R$/L']||0),
-              valor:parseFloat(r['Valor Total']||0)
-            }));
-            return;
+    function carregarDados(){
+      return new Promise(function(resolve){
+        if(!API_URL){
+          try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:gerarDemoData();}catch(e){TODOS_RECS=gerarDemoData();}
+          resolve();return;
+        }
+        var cbName='jfb_cb_'+Date.now();
+        var script=document.createElement('script');
+        var timer=setTimeout(function(){
+          cleanup();
+          try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:gerarDemoData();}catch(e){TODOS_RECS=gerarDemoData();}
+          resolve();
+        },12000);
+        window[cbName]=function(data){
+          clearTimeout(timer);cleanup();
+          if(data&&data.ok&&data.registros&&data.registros.length){
+            TODOS_RECS=data.registros.map(function(r){
+              return{
+                id:r['ID'],data:r['Data'],tag:r['TAG'],placa:r['Placa'],
+                motorista:r['Motorista'],
+                combustivel:r['Combustivel']||r['Combustível']||'',
+                km:parseFloat(r['KM Atual']||0),
+                kmPerc:parseFloat(r['KM Percorrido']||0),
+                litros:parseFloat(r['Litros']||0),
+                preco:parseFloat(r['Preco por L']||r['Preço R$/L']||0),
+                valor:parseFloat(r['Valor Total']||0)
+              };
+            });
+          } else {
+            try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:gerarDemoData();}catch(e){TODOS_RECS=gerarDemoData();}
           }
-        }catch(e){}
-      }
-      // Fallback: localStorage ou demo
-      try{
-        const stored=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');
-        TODOS_RECS=stored.length?stored:gerarDemoData();
-      }catch(e){TODOS_RECS=gerarDemoData();}
+          resolve();
+        };
+        script.onerror=function(){
+          clearTimeout(timer);cleanup();
+          try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:gerarDemoData();}catch(e){TODOS_RECS=gerarDemoData();}
+          resolve();
+        };
+        function cleanup(){delete window[cbName];if(script.parentNode)script.parentNode.removeChild(script);}
+        script.src=API_URL+'?action=listar&limit=500&callback='+cbName;
+        document.head.appendChild(script);
+      });
     }
 
     // ============================================================
