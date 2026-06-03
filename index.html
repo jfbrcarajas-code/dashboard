@@ -383,11 +383,25 @@
     // RENDERIZAR
     function calcVeiculo(lista,tag){
       const regs=lista.filter(r=>r.tag===tag);
-      const litros=regs.reduce((s,r)=>s+(r.litros||0),0);
+
+      // Registros COM km percorrido — usados para média e custo/km
+      // O primeiro abastecimento de cada veículo não tem kmPerc e é excluído
+      // desses cálculos pois não há referência anterior de odômetro
+      const regsComKm=regs.filter(r=>r.kmPerc>0);
+
+      const totalKm=regsComKm.reduce((s,r)=>s+(r.kmPerc||0),0);
+      const litrosComKm=regsComKm.reduce((s,r)=>s+(r.litros||0),0);
+      const valorComKm=regsComKm.reduce((s,r)=>s+(r.valor||0),0);
+
+      // Total gasto inclui TODOS os abastecimentos (incluindo o primeiro)
       const valor=regs.reduce((s,r)=>s+(r.valor||0),0);
-      const totalKm=regs.filter(r=>r.kmPerc>0).reduce((s,r)=>s+(r.kmPerc||0),0);
-      const media=litros>0&&totalKm>0?totalKm/litros:0;
-      const rkm=valor>0&&totalKm>0?valor/totalKm:0;
+      // Total litros inclui todos (para exibição)
+      const litros=regs.reduce((s,r)=>s+(r.litros||0),0);
+
+      // Média e custo: apenas registros com km percorrido conhecido
+      const media=litrosComKm>0&&totalKm>0?totalKm/litrosComKm:0;
+      const rkm=valorComKm>0&&totalKm>0?valorComKm/totalKm:0;
+
       const combFreq={};
       regs.forEach(r=>{if(r.combustivel)combFreq[r.combustivel]=(combFreq[r.combustivel]||0)+1;});
       const combMain=Object.entries(combFreq).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
