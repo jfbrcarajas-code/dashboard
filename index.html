@@ -13,33 +13,12 @@
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
     html{scroll-behavior:smooth}
     body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--cinza-bg);color:var(--texto);font-size:15px;line-height:1.5;min-height:100vh}
-    .login-overlay{position:fixed;inset:0;background:var(--azul);z-index:99999;display:flex;align-items:center;justify-content:center;padding:1.5rem}
-    .login-box{background:#fff;border-radius:var(--radius-lg);padding:2rem 1.5rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-    .login-logo{display:flex;justify-content:center;margin-bottom:1.5rem}
-    .login-logo-inner{width:56px;height:56px;background:var(--amarelo);border-radius:14px;display:flex;align-items:center;justify-content:center}
-    .login-logo-inner i{font-size:28px;color:var(--azul)}
-    .login-title{font-size:18px;font-weight:600;color:var(--azul);text-align:center;margin-bottom:4px}
-    .login-sub{font-size:13px;color:var(--texto-ter);text-align:center;margin-bottom:6px}
-    .login-badge{display:inline-block;background:var(--azul-light);color:var(--azul);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;margin-bottom:1.5rem}
-    .login-field{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
-    .login-label{font-size:12px;font-weight:500;color:var(--texto-sec)}
-    .login-input-wrap{position:relative}
-    .login-input-wrap input{padding-right:44px!important}
-    .login-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--texto-ter);padding:4px;display:flex;align-items:center}
-    .login-btn{width:100%;padding:13px;font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;border-radius:var(--radius);border:none;background:var(--azul);color:#fff;transition:background .15s;min-height:48px}
-    .login-btn:hover{background:var(--azul-mid)}
-    .login-err{font-size:13px;color:var(--vermelho);background:var(--vermelho-bg);border:1px solid #fecaca;border-radius:var(--radius);padding:10px 12px;margin-bottom:1rem;display:none;font-weight:500}
-    .login-err.show{display:block}
-    .login-footer{text-align:center;font-size:11px;color:var(--texto-ter);margin-top:1.25rem}
-    .login-footer strong{color:var(--azul)}
     .topbar{background:var(--azul);color:#fff;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
     .topbar-left{display:flex;align-items:center;gap:10px}
     .topbar-logo{width:32px;height:32px;background:var(--amarelo);border-radius:8px;display:flex;align-items:center;justify-content:center}
     .topbar-logo i{font-size:18px;color:var(--azul)}
     .topbar-title{font-size:15px;font-weight:600;color:#fff}
     .topbar-sub{font-size:11px;color:rgba(255,255,255,.6)}
-    .logout-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:var(--radius);padding:6px 12px;color:rgba(255,255,255,.85);cursor:pointer;font-size:13px;font-family:'IBM Plex Sans',sans-serif;transition:background .15s}
-    .logout-btn:hover{background:rgba(255,255,255,.2)}
     .container{max-width:1100px;margin:0 auto;padding:1.25rem 1rem}
     .filtro-section{background:var(--cinza-card);border:1px solid var(--cinza-borda);border-radius:var(--radius-lg);padding:1.125rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
     .filtro-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
@@ -115,29 +94,6 @@
 </head>
 <body>
 
-  <div class="login-overlay" id="login-overlay">
-    <div class="login-box">
-      <div class="login-logo"><div class="login-logo-inner"><i class="ti ti-chart-bar"></i></div></div>
-      <div class="login-title">Dashboard de Combustível</div>
-      <div class="login-sub">JF Brasil · Complexo Carajás</div>
-      <div style="text-align:center;margin-bottom:1.5rem"><span class="login-badge"><i class="ti ti-shield-lock"></i> Acesso restrito</span></div>
-      <div class="login-err" id="login-err">Senha incorreta. Tente novamente.</div>
-      <div class="login-field">
-        <label class="login-label" for="login-senha">Senha de acesso</label>
-        <div class="login-input-wrap">
-          <input type="password" id="login-senha" placeholder="Digite a senha"
-            style="font-family:'IBM Plex Sans',sans-serif;font-size:15px;width:100%;height:44px;padding:10px 44px 10px 12px;border-radius:10px;border:1px solid #d0d4db;background:#fff;color:#1a2130;outline:none"
-            autocomplete="current-password" onkeydown="if(event.key==='Enter')fazerLogin()"/>
-          <button class="login-eye" onclick="toggleSenha()" tabindex="-1" type="button">
-            <i class="ti ti-eye" id="eye-icon" style="font-size:18px"></i>
-          </button>
-        </div>
-      </div>
-      <button class="login-btn" onclick="fazerLogin()"><i class="ti ti-lock-open"></i> Acessar dashboard</button>
-      <div class="login-footer"><strong>JF Brasil Engenharia</strong><br>GGES / Geotecnia Operacional</div>
-    </div>
-  </div>
-
   <div class="topbar">
     <div class="topbar-left">
       <div class="topbar-logo"><i class="ti ti-chart-bar"></i></div>
@@ -146,10 +102,7 @@
         <div class="topbar-sub">JF Brasil · Complexo Carajás</div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <span style="font-size:12px;color:rgba(255,255,255,.6)" id="topbar-periodo"></span>
-      <button class="logout-btn" onclick="fazerLogout()"><i class="ti ti-logout"></i> Sair</button>
-    </div>
+    <span style="font-size:12px;color:rgba(255,255,255,.6)" id="topbar-periodo"></span>
   </div>
 
   <div class="container">
@@ -227,57 +180,24 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
-    // ⚙️ CONFIGURAÇÃO
-    const SENHA_CORRETA = 'JF@2026';
-    const SESSION_KEY   = 'jfb_dash_session';
-    const SESSION_TTL   = 8 * 60 * 60 * 1000;
-    const API_URL       = 'https://script.google.com/macros/s/AKfycbxAVjjFesEX81FGz7yg-D_1gfqj5TMfQwjZ2_Ick_jXAxdOcp4HIoMeKe_HIq3o_57f/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxAVjjFesEX81FGz7yg-D_1gfqj5TMfQwjZ2_Ick_jXAxdOcp4HIoMeKe_HIq3o_57f/exec';
 
     const PLACAS = {JJ29:'SIV6B53',JJ30:'RVK0J68',JJ70:'QXO5J07',JJ71:'SYT2C06'};
     const TAGS   = ['JJ29','JJ30','JJ70','JJ71'];
     const CORES  = ['#28334A','#378ADD','#1D9E75','#BA7517'];
 
-    // AUTH
-    function verificarSessao(){
-      try{const s=JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null');if(s&&s.token===btoa(SENHA_CORRETA)&&(Date.now()-s.ts)<SESSION_TTL){document.getElementById('login-overlay').style.display='none';return true;}}catch(e){}
-      return false;
-    }
-    function fazerLogin(){
-      const senha=document.getElementById('login-senha').value;
-      const errEl=document.getElementById('login-err');
-      if(senha===SENHA_CORRETA){
-        sessionStorage.setItem(SESSION_KEY,JSON.stringify({token:btoa(SENHA_CORRETA),ts:Date.now()}));
-        document.getElementById('login-overlay').style.display='none';
-        errEl.className='login-err';
-        inicializar();
-      } else {
-        errEl.className='login-err show';
-        document.getElementById('login-senha').value='';
-        document.getElementById('login-senha').focus();
-      }
-    }
-    function fazerLogout(){if(!confirm('Deseja sair?'))return;sessionStorage.removeItem(SESSION_KEY);location.reload();}
-    function toggleSenha(){const inp=document.getElementById('login-senha');const ico=document.getElementById('eye-icon');if(inp.type==='password'){inp.type='text';ico.className='ti ti-eye-off';}else{inp.type='password';ico.className='ti ti-eye';}}
-
-    // Normalizar data — converte qualquer formato para YYYY-MM-DD
     function normalizarData(val) {
       if (!val) return '';
       var s = String(val);
-      // Formato ISO com hora: 2026-06-01T03:00:00.000Z
-      if (s.length > 10 && s.indexOf('T') > -1) {
-        return s.substring(0, 10);
-      }
-      // Objeto Date do Google Sheets (número serial)
+      if (s.length > 10 && s.indexOf('T') > -1) return s.substring(0, 10);
       if (typeof val === 'number') {
         var d = new Date(Math.round((val - 25569) * 86400 * 1000));
         return d.toISOString().substring(0, 10);
       }
-      // Já está no formato YYYY-MM-DD
       if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
       return s.substring(0, 10);
     }
 
-    // DADOS
     let TODOS_RECS = [];
 
     function carregarDados(){
@@ -296,7 +216,6 @@
         window[cbName]=function(data){
           clearTimeout(timer);cleanup();
           if(data&&data.ok&&data.registros&&data.registros.length){
-            // Mapear registros
             var mapeados = data.registros.map(function(r){
               return{
                 id:   r['ID'],
@@ -312,8 +231,6 @@
                 valor:  parseFloat(r['VALOR TOTAL'] ||r['Valor Total'] ||r['valor']      ||0)||0
               };
             });
-            // Calcular KM percorrido no dashboard quando vier zerado do servidor
-            // Ordenar por data+id crescente para calcular diferença corretamente
             mapeados.sort(function(a,b){return String(a.id).localeCompare(String(b.id));});
             var kmUlt = {};
             mapeados.forEach(function(r){
@@ -325,7 +242,6 @@
                 kmUlt[r.tag] = r.km;
               }
             });
-            // Reordenar por id decrescente (mais recente primeiro)
             mapeados.sort(function(a,b){return String(b.id).localeCompare(String(a.id));});
             TODOS_RECS = mapeados;
           } else {
@@ -345,13 +261,11 @@
       });
     }
 
-    // HELPERS
     function fBRL(v){return(+v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
     function fNum(v,d=0){return(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});}
     function fDataBR(s){if(!s||s.length<10)return'—';var p=s.substring(0,10).split('-');return p[2]+'/'+p[1]+'/'+p[0];}
     function fmt(d){return d.toISOString().split('T')[0];}
 
-    // PERÍODO
     let iniAtual='', fimAtual='';
     let chartGasto=null, chartKm=null, chartMedia=null;
 
@@ -380,28 +294,16 @@
       renderizar(ini,fim);
     }
 
-    // RENDERIZAR
     function calcVeiculo(lista,tag){
       const regs=lista.filter(r=>r.tag===tag);
-
-      // Registros COM km percorrido — usados para média e custo/km
-      // O primeiro abastecimento de cada veículo não tem kmPerc e é excluído
-      // desses cálculos pois não há referência anterior de odômetro
       const regsComKm=regs.filter(r=>r.kmPerc>0);
-
       const totalKm=regsComKm.reduce((s,r)=>s+(r.kmPerc||0),0);
       const litrosComKm=regsComKm.reduce((s,r)=>s+(r.litros||0),0);
       const valorComKm=regsComKm.reduce((s,r)=>s+(r.valor||0),0);
-
-      // Total gasto inclui TODOS os abastecimentos (incluindo o primeiro)
       const valor=regs.reduce((s,r)=>s+(r.valor||0),0);
-      // Total litros inclui todos (para exibição)
       const litros=regs.reduce((s,r)=>s+(r.litros||0),0);
-
-      // Média e custo: apenas registros com km percorrido conhecido
       const media=litrosComKm>0&&totalKm>0?totalKm/litrosComKm:0;
       const rkm=valorComKm>0&&totalKm>0?valorComKm/totalKm:0;
-
       const combFreq={};
       regs.forEach(r=>{if(r.combustivel)combFreq[r.combustivel]=(combFreq[r.combustivel]||0)+1;});
       const combMain=Object.entries(combFreq).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
@@ -414,11 +316,9 @@
         const d=r.data.substring(0,10);
         return (!ini||d>=ini)&&(!fim||d<=fim);
       });
-
       const lbl=ini==='2000-01-01'?'Todo o período · '+lista.length+' registros':`${fDataBR(ini)} até ${fDataBR(fim)} · ${lista.length} registro${lista.length!==1?'s':''}`;
       document.getElementById('periodo-ativo').innerHTML=`<strong>${lbl}</strong>`;
       document.getElementById('topbar-periodo').textContent=ini==='2000-01-01'?'Todo o período':`${fDataBR(ini)} — ${fDataBR(fim)}`;
-
       const totalGasto=lista.reduce((s,r)=>s+(r.valor||0),0);
       const totalLitros=lista.reduce((s,r)=>s+(r.litros||0),0);
       const totalKm=lista.filter(r=>r.kmPerc>0).reduce((s,r)=>s+(r.kmPerc||0),0);
@@ -427,35 +327,26 @@
       document.getElementById('m-litros').textContent=fNum(totalLitros,0)+' L';
       document.getElementById('m-km').textContent=fNum(totalKm,0)+' km';
       document.getElementById('m-media').textContent=fNum(mediaFrota,1)+' km/L';
-
       const veiculos=TAGS.map(t=>calcVeiculo(lista,t));
       const somaGasto=veiculos.reduce((s,v)=>s+v.valor,0);
       const baseGasto=somaGasto>0?somaGasto:0.01;
-
       document.getElementById('cards-veiculo').innerHTML=veiculos.map((v,i)=>{
         const pct=Math.round(v.valor/baseGasto*100);
         const bcls=v.combMain==='Diesel'?'badge-d':v.combMain==='Gasolina'?'badge-g':'badge-e';
         return`<div class="cv-card"><div class="cv-top"><div><div class="cv-tag">${v.tag}</div><div class="cv-placa">${v.placa}</div></div><span class="${bcls}">${v.combMain}</span></div><div class="cv-stats"><div class="cv-stat"><div class="cv-stat-val">${fNum(v.media,1)}</div><div class="cv-stat-lbl">km/L</div></div><div class="cv-stat"><div class="cv-stat-val">${fNum(v.totalKm,0)}</div><div class="cv-stat-lbl">km</div></div><div class="cv-stat"><div class="cv-stat-val" style="font-size:12px">${fBRL(v.valor)}</div><div class="cv-stat-lbl">gasto</div></div></div><div class="cv-bar-label"><span>participação no gasto</span><span>${pct}%</span></div><div class="cv-bar-track"><div class="cv-bar-fill" style="width:${pct}%;background:${CORES[i]}"></div></div></div>`;
       }).join('');
-
       const legHTML=TAGS.map((t,i)=>`<span class="leg-item"><span class="leg-sq" style="background:${CORES[i]}"></span>${t}</span>`).join('');
       ['leg-gasto','leg-km','leg-media'].forEach(id=>document.getElementById(id).innerHTML=legHTML);
-
       const gastoData=veiculos.map(v=>Math.round(v.valor));
       const kmData=veiculos.map(v=>Math.round(v.totalKm));
       const mediaData=veiculos.map(v=>+v.media.toFixed(2));
-
       const baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toLocaleString('pt-BR')}`}}},scales:{x:{grid:{display:false},ticks:{color:'#8e97a8',font:{size:11},autoSkip:false}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e97a8',font:{size:10}}}}};
-
       if(chartGasto)chartGasto.destroy();
       chartGasto=new Chart(document.getElementById('chart-gasto'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?gastoData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>'R$ '+v.toLocaleString('pt-BR')}}}}});
-
       if(chartKm)chartKm.destroy();
       chartKm=new Chart(document.getElementById('chart-km'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?kmData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v.toLocaleString('pt-BR')}}}}});
-
       if(chartMedia)chartMedia.destroy();
       chartMedia=new Chart(document.getElementById('chart-media'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?mediaData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+' km/L'}}}}});
-
       const tbody=document.getElementById('dt-body');
       if(!lista.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Nenhum registro no período selecionado.</td></tr>';return;}
       tbody.innerHTML=veiculos.map(v=>`<tr><td><strong style="color:var(--azul)">${v.tag}</strong></td><td style="color:var(--texto-ter);font-size:12px;letter-spacing:.05em">${v.placa}</td><td>${v.regs}</td><td>${fNum(v.litros,1)} L</td><td>${fNum(v.totalKm,0)} km</td><td><strong>${fNum(v.media,2)} km/L</strong></td><td style="color:var(--texto-sec)">${v.rkm>0?'R$ '+v.rkm.toFixed(3)+'/km':'—'}</td><td style="font-weight:600">${fBRL(v.valor)}</td></tr>`).join('');
@@ -483,7 +374,7 @@
       renderizar(ini,fim);
     }
 
-    if(!verificarSessao()){}
+    inicializar();
   </script>
 </body>
 </html>
