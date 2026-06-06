@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css"/>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    :root{--azul:#28334A;--azul-mid:#3d4f6e;--azul-light:#e8ecf2;--amarelo:#FECB00;--amarelo-dark:#c9a100;--branco:#fff;--cinza-bg:#f5f6f8;--cinza-card:#fff;--cinza-borda:#e2e5ea;--cinza-borda2:#d0d4db;--texto:#1a2130;--texto-sec:#5a6478;--texto-ter:#8e97a8;--verde:#1D9E75;--verde-bg:#f0fdf4;--vermelho:#dc2626;--vermelho-bg:#fef2f2;--azul-info:#2563eb;--radius:10px;--radius-lg:14px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+    :root{--azul:#28334A;--azul-mid:#3d4f6e;--azul-light:#e8ecf2;--amarelo:#FECB00;--amarelo-dark:#c9a100;--branco:#fff;--cinza-bg:#f5f6f8;--cinza-card:#fff;--cinza-borda:#e2e5ea;--cinza-borda2:#d0d4db;--texto:#1a2130;--texto-sec:#5a6478;--texto-ter:#8e97a8;--verde:#1D9E75;--verde-bg:#f0fdf4;--vermelho:#dc2626;--vermelho-bg:#fef2f2;--radius:10px;--radius-lg:14px;--shadow:0 1px 3px rgba(0,0,0,.08)}
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
     html{scroll-behavior:smooth}
     body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--cinza-bg);color:var(--texto);font-size:15px;line-height:1.5;min-height:100vh}
@@ -19,6 +19,7 @@
     .topbar-logo i{font-size:18px;color:var(--azul)}
     .topbar-title{font-size:15px;font-weight:600;color:#fff}
     .topbar-sub{font-size:11px;color:rgba(255,255,255,.6)}
+    .loading-bar{background:var(--amarelo);height:3px;width:0;position:fixed;top:0;left:0;z-index:9999;transition:width .3s}
     .container{max-width:1100px;margin:0 auto;padding:1.25rem 1rem}
     .filtro-section{background:var(--cinza-card);border:1px solid var(--cinza-borda);border-radius:var(--radius-lg);padding:1.125rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
     .filtro-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
@@ -93,6 +94,7 @@
   </style>
 </head>
 <body>
+  <div class="loading-bar" id="loading-bar"></div>
 
   <div class="topbar">
     <div class="topbar-left">
@@ -180,102 +182,115 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbz5gmFBlpiwV8R1RbbV5CQdLjqL97OqF2mM6goSjLGpoCM-a87uN7ClBrTHmtoMgLSs/exec';
+    // Lê direto do Google Sheets via API pública (CSV export)
+    var SHEET_ID = '1mEQkC9lXUiP5ru3Bj0Qsahocn-pXbMWeO9dWtsTVszQ';
+    var ABA      = 'Registros';
+    var CSV_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(ABA);
 
-    const PLACAS = {JJ29:'SIV6B53',JJ30:'RVK0J68',JJ70:'QXO5J07',JJ71:'SYT2C06'};
-    const TAGS   = ['JJ29','JJ30','JJ70','JJ71'];
-    const CORES  = ['#28334A','#378ADD','#1D9E75','#BA7517'];
+    var PLACAS = {JJ29:'SIV6B53',JJ30:'RVK0J68',JJ70:'QXO5J07',JJ71:'SYT2C06'};
+    var TAGS   = ['JJ29','JJ30','JJ70','JJ71'];
+    var CORES  = ['#28334A','#378ADD','#1D9E75','#BA7517'];
 
-    function normalizarData(val) {
-      if (!val) return '';
-      var s = String(val);
-      if (s.length > 10 && s.indexOf('T') > -1) return s.substring(0, 10);
-      if (typeof val === 'number') {
-        var d = new Date(Math.round((val - 25569) * 86400 * 1000));
-        return d.toISOString().substring(0, 10);
-      }
-      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-      return s.substring(0, 10);
+    var TODOS_RECS = [];
+
+    function setLoading(v){
+      document.getElementById('loading-bar').style.width = v ? '70%' : '100%';
+      if(!v) setTimeout(function(){document.getElementById('loading-bar').style.width='0';},400);
     }
 
-    let TODOS_RECS = [];
+    function parseCSV(text){
+      var lines = text.trim().split('\n');
+      if(lines.length < 2) return [];
+      var header = lines[0].split(',').map(function(h){ return h.replace(/^"|"$/g,'').trim(); });
+      var rows = [];
+      for(var i=1;i<lines.length;i++){
+        var cols = lines[i].match(/(".*?"|[^,]+)(?=,|$)/g)||[];
+        var obj = {};
+        for(var j=0;j<header.length;j++){
+          obj[header[j]] = cols[j] ? cols[j].replace(/^"|"$/g,'').trim() : '';
+        }
+        rows.push(obj);
+      }
+      return rows;
+    }
+
+    function normalizarData(val){
+      if(!val) return '';
+      var s = String(val).trim();
+      // formato YYYY-MM-DD
+      if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+      // formato DD/MM/YYYY
+      if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){
+        var p=s.split('/'); return p[2]+'-'+p[1]+'-'+p[0];
+      }
+      // ISO com hora
+      if(s.indexOf('T')>-1) return s.substring(0,10);
+      return s.substring(0,10);
+    }
 
     function carregarDados(){
       return new Promise(function(resolve){
-        if(!API_URL){
-          try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:[];}catch(e){TODOS_RECS=[];}
-          resolve();return;
-        }
-        var cbName='jfb_cb_'+Date.now();
-        var script=document.createElement('script');
-        var timer=setTimeout(function(){
-          cleanup();
-          try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:[];}catch(e){TODOS_RECS=[];}
-          resolve();
-        },15000);
-        window[cbName]=function(data){
-          clearTimeout(timer);cleanup();
-          if(data&&data.ok&&data.registros&&data.registros.length){
-            var mapeados = data.registros.map(function(r){
-              return{
-                id:   r['ID'],
-                data: normalizarData(r['DATA']||r['Data']||r['data']||''),
-                tag:  String(r['TAG']||r['Tag']||''),
-                placa:String(r['PLACA']||r['Placa']||''),
-                motorista:   String(r['MOTORISTA']||r['Motorista']||''),
-                combustivel: String(r['COMBUSTÍVEL']||r['COMBUSTIVEL']||r['Combustivel']||r['Combustível']||''),
-                km:     parseFloat(r['KM ATUAL']    ||r['KM Atual']    ||0)||0,
-                kmPerc: parseFloat(r['KM PERCORRIDO']||r['KM Percorrido']||r['KM percorrido']||0)||0,
-                litros: parseFloat(r['LITROS']      ||r['Litros']      ||0)||0,
-                preco:  parseFloat(r['PREÇO R$/L']  ||r['Preço R$/L']  ||r['PRECO R$/L'] ||r['Preco por L']||0)||0,
-                valor:  parseFloat(r['VALOR TOTAL'] ||r['Valor Total'] ||r['valor']      ||0)||0
+        setLoading(true);
+        fetch(CSV_URL)
+          .then(function(r){ return r.text(); })
+          .then(function(text){
+            var rows = parseCSV(text);
+            var mapeados = rows.map(function(r){
+              return {
+                id:          r['ID']||'',
+                data:        normalizarData(r['Data']||r['DATA']||''),
+                tag:         String(r['TAG']||'').trim(),
+                placa:       String(r['Placa']||r['PLACA']||'').trim(),
+                motorista:   String(r['Motorista']||r['MOTORISTA']||'').trim(),
+                combustivel: String(r['Combustivel']||r['COMBUSTÍVEL']||r['Combustivel']||'').trim(),
+                km:          parseFloat(r['KM Atual']||r['KM ATUAL']||0)||0,
+                kmPerc:      parseFloat(r['KM Percorrido']||r['KM PERCORRIDO']||0)||0,
+                litros:      parseFloat(r['Litros']||r['LITROS']||0)||0,
+                preco:       parseFloat(r['Preco por L']||r['PREÇO R$/L']||0)||0,
+                valor:       parseFloat(r['Valor Total']||r['VALOR TOTAL']||0)||0
               };
-            });
-            mapeados.sort(function(a,b){return String(a.id).localeCompare(String(b.id));});
-            var kmUlt = {};
+            }).filter(function(r){ return r.tag && r.data; });
+
+            // Calcular kmPerc quando vier zerado
+            mapeados.sort(function(a,b){ return String(a.id).localeCompare(String(b.id)); });
+            var kmUlt={};
             mapeados.forEach(function(r){
-              if(r.km > 0){
-                if(r.kmPerc <= 0 && kmUlt[r.tag] && kmUlt[r.tag] > 0){
-                  r.kmPerc = r.km - kmUlt[r.tag];
-                  if(r.kmPerc < 0) r.kmPerc = 0;
+              if(r.km>0){
+                if(r.kmPerc<=0 && kmUlt[r.tag] && kmUlt[r.tag]>0){
+                  r.kmPerc=r.km-kmUlt[r.tag];
+                  if(r.kmPerc<0) r.kmPerc=0;
                 }
-                kmUlt[r.tag] = r.km;
+                kmUlt[r.tag]=r.km;
               }
             });
-            mapeados.sort(function(a,b){return String(b.id).localeCompare(String(a.id));});
+            mapeados.sort(function(a,b){ return String(b.id).localeCompare(String(a.id)); });
             TODOS_RECS = mapeados;
-          } else {
-            TODOS_RECS=[];
-            console.log('API retornou vazio ou erro:', data);
-          }
-          resolve();
-        };
-        script.onerror=function(){
-          clearTimeout(timer);cleanup();
-          try{var s=JSON.parse(localStorage.getItem('jfb_abast_v1')||'[]');TODOS_RECS=s.length?s:[];}catch(e){TODOS_RECS=[];}
-          resolve();
-        };
-        function cleanup(){delete window[cbName];if(script.parentNode)script.parentNode.removeChild(script);}
-        script.src=API_URL+'?action=listar&limit=500&callback='+cbName;
-        document.head.appendChild(script);
+            setLoading(false);
+            resolve();
+          })
+          .catch(function(err){
+            console.error('Erro ao carregar dados:', err);
+            setLoading(false);
+            resolve();
+          });
       });
     }
 
     function fBRL(v){return(+v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
-    function fNum(v,d=0){return(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});}
+    function fNum(v,d){d=d||0;return(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});}
     function fDataBR(s){if(!s||s.length<10)return'—';var p=s.substring(0,10).split('-');return p[2]+'/'+p[1]+'/'+p[0];}
     function fmt(d){return d.toISOString().split('T')[0];}
 
-    let iniAtual='', fimAtual='';
-    let chartGasto=null, chartKm=null, chartMedia=null;
+    var iniAtual='', fimAtual='';
+    var chartGasto=null, chartKm=null, chartMedia=null;
 
     function setPeriodo(p,btn){
-      document.querySelectorAll('.pb').forEach(b=>b.classList.remove('on'));
+      document.querySelectorAll('.pb').forEach(function(b){b.classList.remove('on');});
       btn.classList.add('on');
-      const hoje=new Date();
-      let ini,fim=fmt(hoje);
+      var hoje=new Date();
+      var ini,fim=fmt(hoje);
       if(p==='mes'){ini=fmt(new Date(hoje.getFullYear(),hoje.getMonth(),1));}
-      else if(p==='mes_ant'){const d=new Date(hoje.getFullYear(),hoje.getMonth()-1,1);const df=new Date(hoje.getFullYear(),hoje.getMonth(),0);ini=fmt(d);fim=fmt(df);}
+      else if(p==='mes_ant'){var d=new Date(hoje.getFullYear(),hoje.getMonth()-1,1);var df=new Date(hoje.getFullYear(),hoje.getMonth(),0);ini=fmt(d);fim=fmt(df);}
       else if(p==='ano'){ini=fmt(new Date(hoje.getFullYear(),0,1));}
       else{ini='2000-01-01';}
       document.getElementById('f-ini').value=ini;
@@ -285,9 +300,9 @@
     }
 
     function aplicarIntervalo(){
-      document.querySelectorAll('.pb').forEach(b=>b.classList.remove('on'));
-      const ini=document.getElementById('f-ini').value;
-      const fim=document.getElementById('f-fim').value;
+      document.querySelectorAll('.pb').forEach(function(b){b.classList.remove('on');});
+      var ini=document.getElementById('f-ini').value;
+      var fim=document.getElementById('f-fim').value;
       if(!ini||!fim){alert('Selecione as duas datas.');return;}
       if(ini>fim){alert('A data inicial deve ser anterior à data final.');return;}
       iniAtual=ini;fimAtual=fim;
@@ -295,79 +310,89 @@
     }
 
     function calcVeiculo(lista,tag){
-      const regs=lista.filter(r=>r.tag===tag);
-      const regsComKm=regs.filter(r=>r.kmPerc>0);
-      const totalKm=regsComKm.reduce((s,r)=>s+(r.kmPerc||0),0);
-      const litrosComKm=regsComKm.reduce((s,r)=>s+(r.litros||0),0);
-      const valorComKm=regsComKm.reduce((s,r)=>s+(r.valor||0),0);
-      const valor=regs.reduce((s,r)=>s+(r.valor||0),0);
-      const litros=regs.reduce((s,r)=>s+(r.litros||0),0);
-      const media=litrosComKm>0&&totalKm>0?totalKm/litrosComKm:0;
-      const rkm=valorComKm>0&&totalKm>0?valorComKm/totalKm:0;
-      const combFreq={};
-      regs.forEach(r=>{if(r.combustivel)combFreq[r.combustivel]=(combFreq[r.combustivel]||0)+1;});
-      const combMain=Object.entries(combFreq).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
-      return{tag,placa:PLACAS[tag],regs:regs.length,litros,valor,totalKm,media,rkm,combMain};
+      var regs=lista.filter(function(r){return r.tag===tag;});
+      var regsComKm=regs.filter(function(r){return r.kmPerc>0;});
+      var totalKm=regsComKm.reduce(function(s,r){return s+(r.kmPerc||0);},0);
+      var litrosComKm=regsComKm.reduce(function(s,r){return s+(r.litros||0);},0);
+      var valorComKm=regsComKm.reduce(function(s,r){return s+(r.valor||0);},0);
+      var valor=regs.reduce(function(s,r){return s+(r.valor||0);},0);
+      var litros=regs.reduce(function(s,r){return s+(r.litros||0);},0);
+      var media=litrosComKm>0&&totalKm>0?totalKm/litrosComKm:0;
+      var rkm=valorComKm>0&&totalKm>0?valorComKm/totalKm:0;
+      var combFreq={};
+      regs.forEach(function(r){if(r.combustivel)combFreq[r.combustivel]=(combFreq[r.combustivel]||0)+1;});
+      var combMain=Object.entries(combFreq).sort(function(a,b){return b[1]-a[1];})[0]?.[0]||'—';
+      return{tag:tag,placa:PLACAS[tag],regs:regs.length,litros:litros,valor:valor,totalKm:totalKm,media:media,rkm:rkm,combMain:combMain};
     }
 
     function renderizar(ini,fim){
-      const lista=TODOS_RECS.filter(r=>{
+      var lista=TODOS_RECS.filter(function(r){
         if(!r.data) return false;
-        const d=r.data.substring(0,10);
+        var d=r.data.substring(0,10);
         return (!ini||d>=ini)&&(!fim||d<=fim);
       });
-      const lbl=ini==='2000-01-01'?'Todo o período · '+lista.length+' registros':`${fDataBR(ini)} até ${fDataBR(fim)} · ${lista.length} registro${lista.length!==1?'s':''}`;
-      document.getElementById('periodo-ativo').innerHTML=`<strong>${lbl}</strong>`;
-      document.getElementById('topbar-periodo').textContent=ini==='2000-01-01'?'Todo o período':`${fDataBR(ini)} — ${fDataBR(fim)}`;
-      const totalGasto=lista.reduce((s,r)=>s+(r.valor||0),0);
-      const totalLitros=lista.reduce((s,r)=>s+(r.litros||0),0);
-      const totalKm=lista.filter(r=>r.kmPerc>0).reduce((s,r)=>s+(r.kmPerc||0),0);
-      const mediaFrota=totalLitros>0&&totalKm>0?totalKm/totalLitros:0;
+      var lbl=ini==='2000-01-01'?'Todo o período · '+lista.length+' registros':fDataBR(ini)+' até '+fDataBR(fim)+' · '+lista.length+' registro'+(lista.length!==1?'s':'');
+      document.getElementById('periodo-ativo').innerHTML='<strong>'+lbl+'</strong>';
+      document.getElementById('topbar-periodo').textContent=ini==='2000-01-01'?'Todo o período':fDataBR(ini)+' — '+fDataBR(fim);
+
+      var totalGasto=lista.reduce(function(s,r){return s+(r.valor||0);},0);
+      var totalLitros=lista.reduce(function(s,r){return s+(r.litros||0);},0);
+      var totalKm=lista.filter(function(r){return r.kmPerc>0;}).reduce(function(s,r){return s+(r.kmPerc||0);},0);
+      var mediaFrota=totalLitros>0&&totalKm>0?totalKm/totalLitros:0;
       document.getElementById('m-gasto').textContent=fBRL(totalGasto);
       document.getElementById('m-litros').textContent=fNum(totalLitros,0)+' L';
       document.getElementById('m-km').textContent=fNum(totalKm,0)+' km';
       document.getElementById('m-media').textContent=fNum(mediaFrota,1)+' km/L';
-      const veiculos=TAGS.map(t=>calcVeiculo(lista,t));
-      const somaGasto=veiculos.reduce((s,v)=>s+v.valor,0);
-      const baseGasto=somaGasto>0?somaGasto:0.01;
-      document.getElementById('cards-veiculo').innerHTML=veiculos.map((v,i)=>{
-        const pct=Math.round(v.valor/baseGasto*100);
-        const bcls=v.combMain==='Diesel'?'badge-d':v.combMain==='Gasolina'?'badge-g':'badge-e';
-        return`<div class="cv-card"><div class="cv-top"><div><div class="cv-tag">${v.tag}</div><div class="cv-placa">${v.placa}</div></div><span class="${bcls}">${v.combMain}</span></div><div class="cv-stats"><div class="cv-stat"><div class="cv-stat-val">${fNum(v.media,1)}</div><div class="cv-stat-lbl">km/L</div></div><div class="cv-stat"><div class="cv-stat-val">${fNum(v.totalKm,0)}</div><div class="cv-stat-lbl">km</div></div><div class="cv-stat"><div class="cv-stat-val" style="font-size:12px">${fBRL(v.valor)}</div><div class="cv-stat-lbl">gasto</div></div></div><div class="cv-bar-label"><span>participação no gasto</span><span>${pct}%</span></div><div class="cv-bar-track"><div class="cv-bar-fill" style="width:${pct}%;background:${CORES[i]}"></div></div></div>`;
+
+      var veiculos=TAGS.map(function(t){return calcVeiculo(lista,t);});
+      var somaGasto=veiculos.reduce(function(s,v){return s+v.valor;},0);
+      var baseGasto=somaGasto>0?somaGasto:0.01;
+
+      document.getElementById('cards-veiculo').innerHTML=veiculos.map(function(v,i){
+        var pct=Math.round(v.valor/baseGasto*100);
+        var bcls=v.combMain==='Diesel'?'badge-d':v.combMain==='Gasolina'?'badge-g':'badge-e';
+        return '<div class="cv-card"><div class="cv-top"><div><div class="cv-tag">'+v.tag+'</div><div class="cv-placa">'+v.placa+'</div></div><span class="'+bcls+'">'+v.combMain+'</span></div><div class="cv-stats"><div class="cv-stat"><div class="cv-stat-val">'+fNum(v.media,1)+'</div><div class="cv-stat-lbl">km/L</div></div><div class="cv-stat"><div class="cv-stat-val">'+fNum(v.totalKm,0)+'</div><div class="cv-stat-lbl">km</div></div><div class="cv-stat"><div class="cv-stat-val" style="font-size:12px">'+fBRL(v.valor)+'</div><div class="cv-stat-lbl">gasto</div></div></div><div class="cv-bar-label"><span>participação no gasto</span><span>'+pct+'%</span></div><div class="cv-bar-track"><div class="cv-bar-fill" style="width:'+pct+'%;background:'+CORES[i]+'"></div></div></div>';
       }).join('');
-      const legHTML=TAGS.map((t,i)=>`<span class="leg-item"><span class="leg-sq" style="background:${CORES[i]}"></span>${t}</span>`).join('');
-      ['leg-gasto','leg-km','leg-media'].forEach(id=>document.getElementById(id).innerHTML=legHTML);
-      const gastoData=veiculos.map(v=>Math.round(v.valor));
-      const kmData=veiculos.map(v=>Math.round(v.totalKm));
-      const mediaData=veiculos.map(v=>+v.media.toFixed(2));
-      const baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw.toLocaleString('pt-BR')}`}}},scales:{x:{grid:{display:false},ticks:{color:'#8e97a8',font:{size:11},autoSkip:false}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e97a8',font:{size:10}}}}};
+
+      var legHTML=TAGS.map(function(t,i){return '<span class="leg-item"><span class="leg-sq" style="background:'+CORES[i]+'"></span>'+t+'</span>';}).join('');
+      ['leg-gasto','leg-km','leg-media'].forEach(function(id){document.getElementById(id).innerHTML=legHTML;});
+
+      var gastoData=veiculos.map(function(v){return Math.round(v.valor);});
+      var kmData=veiculos.map(function(v){return Math.round(v.totalKm);});
+      var mediaData=veiculos.map(function(v){return +v.media.toFixed(2);});
+
+      var baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+ctx.raw.toLocaleString('pt-BR');}}}},scales:{x:{grid:{display:false},ticks:{color:'#8e97a8',font:{size:11},autoSkip:false}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e97a8',font:{size:10}}}}};
+
       if(chartGasto)chartGasto.destroy();
-      chartGasto=new Chart(document.getElementById('chart-gasto'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?gastoData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>'R$ '+v.toLocaleString('pt-BR')}}}}});
+      chartGasto=new Chart(document.getElementById('chart-gasto'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map(function(t,i){return{label:t,data:TAGS.map(function(_,j){return j===i?gastoData[i]:null;}),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false};})},options:Object.assign({},baseOpts,{scales:Object.assign({},baseOpts.scales,{y:Object.assign({},baseOpts.scales.y,{ticks:Object.assign({},baseOpts.scales.y.ticks,{callback:function(v){return'R$ '+v.toLocaleString('pt-BR');}})})})})});
+
       if(chartKm)chartKm.destroy();
-      chartKm=new Chart(document.getElementById('chart-km'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?kmData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v.toLocaleString('pt-BR')}}}}});
+      chartKm=new Chart(document.getElementById('chart-km'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map(function(t,i){return{label:t,data:TAGS.map(function(_,j){return j===i?kmData[i]:null;}),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false};})},options:Object.assign({},baseOpts,{scales:Object.assign({},baseOpts.scales,{y:Object.assign({},baseOpts.scales.y,{ticks:Object.assign({},baseOpts.scales.y.ticks,{callback:function(v){return v.toLocaleString('pt-BR');}})})})})});
+
       if(chartMedia)chartMedia.destroy();
-      chartMedia=new Chart(document.getElementById('chart-media'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map((t,i)=>({label:t,data:TAGS.map((_,j)=>j===i?mediaData[i]:null),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false}))},options:{...baseOpts,scales:{...baseOpts.scales,y:{...baseOpts.scales.y,ticks:{...baseOpts.scales.y.ticks,callback:v=>v+' km/L'}}}}});
-      const tbody=document.getElementById('dt-body');
+      chartMedia=new Chart(document.getElementById('chart-media'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map(function(t,i){return{label:t,data:TAGS.map(function(_,j){return j===i?mediaData[i]:null;}),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false};})},options:Object.assign({},baseOpts,{scales:Object.assign({},baseOpts.scales,{y:Object.assign({},baseOpts.scales.y,{ticks:Object.assign({},baseOpts.scales.y.ticks,{callback:function(v){return v+' km/L';}})})})})});
+
+      var tbody=document.getElementById('dt-body');
       if(!lista.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Nenhum registro no período selecionado.</td></tr>';return;}
-      tbody.innerHTML=veiculos.map(v=>`<tr><td><strong style="color:var(--azul)">${v.tag}</strong></td><td style="color:var(--texto-ter);font-size:12px;letter-spacing:.05em">${v.placa}</td><td>${v.regs}</td><td>${fNum(v.litros,1)} L</td><td>${fNum(v.totalKm,0)} km</td><td><strong>${fNum(v.media,2)} km/L</strong></td><td style="color:var(--texto-sec)">${v.rkm>0?'R$ '+v.rkm.toFixed(3)+'/km':'—'}</td><td style="font-weight:600">${fBRL(v.valor)}</td></tr>`).join('');
+      tbody.innerHTML=veiculos.map(function(v){return '<tr><td><strong style="color:var(--azul)">'+v.tag+'</strong></td><td style="color:var(--texto-ter);font-size:12px;letter-spacing:.05em">'+v.placa+'</td><td>'+v.regs+'</td><td>'+fNum(v.litros,1)+' L</td><td>'+fNum(v.totalKm,0)+' km</td><td><strong>'+fNum(v.media,2)+' km/L</strong></td><td style="color:var(--texto-sec)">'+(v.rkm>0?'R$ '+v.rkm.toFixed(3)+'/km':'—')+'</td><td style="font-weight:600">'+fBRL(v.valor)+'</td></tr>';}).join('');
     }
 
     function exportarCSV(){
-      const lista=TODOS_RECS.filter(r=>{const d=(r.data||'').substring(0,10);return(!iniAtual||d>=iniAtual)&&(!fimAtual||d<=fimAtual);});
-      const veiculos=TAGS.map(t=>calcVeiculo(lista,t));
-      const h='TAG;Placa;Abastecimentos;Litros;KM Percorrido;Média km/L;R$/km;Total Gasto';
-      const rows=veiculos.map(v=>[v.tag,v.placa,v.regs,v.litros.toFixed(2),Math.round(v.totalKm),v.media.toFixed(2),v.rkm>0?v.rkm.toFixed(3):'',v.valor.toFixed(2)].join(';'));
-      const csv=[h,...rows].join('\n');
-      const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');a.href=url;a.download='dashboard_combustivel.csv';a.click();URL.revokeObjectURL(url);
+      var lista=TODOS_RECS.filter(function(r){var d=(r.data||'').substring(0,10);return(!iniAtual||d>=iniAtual)&&(!fimAtual||d<=fimAtual);});
+      var veiculos=TAGS.map(function(t){return calcVeiculo(lista,t);});
+      var h='TAG;Placa;Abastecimentos;Litros;KM Percorrido;Média km/L;R$/km;Total Gasto';
+      var rows=veiculos.map(function(v){return[v.tag,v.placa,v.regs,v.litros.toFixed(2),Math.round(v.totalKm),v.media.toFixed(2),v.rkm>0?v.rkm.toFixed(3):'',v.valor.toFixed(2)].join(';');});
+      var csv=[h].concat(rows).join('\n');
+      var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a');a.href=url;a.download='dashboard_combustivel.csv';a.click();URL.revokeObjectURL(url);
     }
 
     async function inicializar(){
       await carregarDados();
-      const hoje=new Date();
-      const ini=fmt(new Date(hoje.getFullYear(),hoje.getMonth(),1));
-      const fim=fmt(hoje);
+      var hoje=new Date();
+      var ini=fmt(new Date(hoje.getFullYear(),hoje.getMonth(),1));
+      var fim=fmt(hoje);
       document.getElementById('f-ini').value=ini;
       document.getElementById('f-fim').value=fim;
       iniAtual=ini;fimAtual=fim;
