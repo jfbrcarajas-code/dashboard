@@ -38,8 +38,13 @@
     .btn-filtrar:hover{background:var(--azul-light);border-color:var(--azul)}
     .periodo-ativo{font-size:12px;color:var(--texto-sec);text-align:right}
     .periodo-ativo strong{color:var(--azul)}
-    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
+    .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1.25rem}
+    @media(max-width:860px){.stats-grid{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:640px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+    .stat-card.geral{background:var(--azul-mid);border:2px solid var(--amarelo)}
+    .forn-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .forn-select{font-family:'IBM Plex Sans',sans-serif;font-size:13px;height:34px;padding:4px 10px;border-radius:var(--radius);border:1px solid var(--cinza-borda2);background:#fff;color:var(--texto);outline:none;cursor:pointer;transition:border-color .15s;max-width:220px}
+    .forn-select:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(40,51,74,.1)}
     .stat-card{background:var(--azul);border-radius:var(--radius);padding:.85rem 1.1rem}
     .stat-card.yellow{background:var(--amarelo)}
     .stat-card.white{background:#fff;border:1px solid var(--cinza-borda)}
@@ -128,16 +133,23 @@
             <input type="date" id="f-fim" class="int-input"/>
             <button class="btn-filtrar" onclick="aplicarIntervalo()"><i class="ti ti-search"></i> Filtrar</button>
           </div>
+          <div class="forn-row">
+            <span class="int-label"><i class="ti ti-building-store" style="font-size:13px;vertical-align:-2px"></i> Fornecedor:</span>
+            <select id="f-forn" class="forn-select" onchange="aplicarFornecedor()">
+              <option value="">Todos</option>
+            </select>
+          </div>
           <p class="periodo-ativo" id="periodo-ativo">—</p>
         </div>
       </div>
     </div>
 
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-label"><i class="ti ti-currency-dollar"></i> Total gasto</div><div class="stat-value" id="m-gasto">—</div><div class="stat-sub">no período</div></div>
+      <div class="stat-card"><div class="stat-label"><i class="ti ti-currency-dollar"></i> Total gasto</div><div class="stat-value" id="m-gasto">—</div><div class="stat-sub">período · fornecedor</div></div>
       <div class="stat-card yellow"><div class="stat-label"><i class="ti ti-gas-station"></i> Total litros</div><div class="stat-value" id="m-litros">—</div><div class="stat-sub">abastecidos</div></div>
       <div class="stat-card"><div class="stat-label"><i class="ti ti-road"></i> KM percorrido</div><div class="stat-value" id="m-km">—</div><div class="stat-sub">total da frota</div></div>
       <div class="stat-card white"><div class="stat-label"><i class="ti ti-chart-line"></i> Média frota</div><div class="stat-value" id="m-media">—</div><div class="stat-sub">km/L geral</div></div>
+      <div class="stat-card geral"><div class="stat-label"><i class="ti ti-sum"></i> Total geral</div><div class="stat-value" id="m-gasto-geral">—</div><div class="stat-sub">todos fornecedores</div></div>
     </div>
 
     <div class="card">
@@ -182,7 +194,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
-    // Lê direto do Google Sheets via API pública (CSV export)
     var SHEET_ID = '1mEQkC9lXUiP5ru3Bj0Qsahocn-pXbMWeO9dWtsTVszQ';
     var ABA      = 'Registros';
     var CSV_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(ABA);
@@ -198,32 +209,52 @@
       if(!v) setTimeout(function(){document.getElementById('loading-bar').style.width='0';},400);
     }
 
+    // -----------------------------------------------------------------------
+    // FIX: parser CSV robusto — respeita campos entre aspas com vírgula interna
+    // -----------------------------------------------------------------------
+    function splitCSVLine(line){
+      var result=[], cur='', inQuote=false;
+      for(var i=0;i<line.length;i++){
+        var c=line[i];
+        if(c==='"'){ inQuote=!inQuote; }
+        else if(c===','&&!inQuote){ result.push(cur.trim()); cur=''; }
+        else{ cur+=c; }
+      }
+      result.push(cur.trim());
+      return result;
+    }
+
     function parseCSV(text){
       var lines = text.trim().split('\n');
       if(lines.length < 2) return [];
-      var header = lines[0].split(',').map(function(h){ return h.replace(/^"|"$/g,'').trim(); });
+      var header = splitCSVLine(lines[0]).map(function(h){ return h.replace(/^"|"$/g,'').trim(); });
       var rows = [];
       for(var i=1;i<lines.length;i++){
-        var cols = lines[i].match(/(".*?"|[^,]+)(?=,|$)/g)||[];
+        var cols = splitCSVLine(lines[i]);
         var obj = {};
         for(var j=0;j<header.length;j++){
-          obj[header[j]] = cols[j] ? cols[j].replace(/^"|"$/g,'').trim() : '';
+          obj[header[j]] = cols[j] !== undefined ? cols[j].replace(/^"|"$/g,'').trim() : '';
         }
         rows.push(obj);
       }
       return rows;
     }
 
+    // -----------------------------------------------------------------------
+    // FIX: parse numérico tolerando vírgula decimal (padrão pt-BR)
+    // -----------------------------------------------------------------------
+    function toNum(v){
+      return parseFloat(String(v||'0').replace(',','.'))||0;
+    }
+    // -----------------------------------------------------------------------
+
     function normalizarData(val){
       if(!val) return '';
       var s = String(val).trim();
-      // formato YYYY-MM-DD
       if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-      // formato DD/MM/YYYY
       if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){
         var p=s.split('/'); return p[2]+'-'+p[1]+'-'+p[0];
       }
-      // ISO com hora
       if(s.indexOf('T')>-1) return s.substring(0,10);
       return s.substring(0,10);
     }
@@ -243,15 +274,15 @@
                 placa:       String(r['Placa']||r['PLACA']||'').trim(),
                 motorista:   String(r['Motorista']||r['MOTORISTA']||'').trim(),
                 combustivel: String(r['Combustivel']||r['COMBUSTÍVEL']||r['Combustivel']||'').trim(),
-                km:          parseFloat(r['KM Atual']||r['KM ATUAL']||0)||0,
-                kmPerc:      parseFloat(r['KM Percorrido']||r['KM PERCORRIDO']||0)||0,
-                litros:      parseFloat(r['Litros']||r['LITROS']||0)||0,
-                preco:       parseFloat(r['Preco por L']||r['PREÇO R$/L']||0)||0,
-                valor:       parseFloat(r['Valor Total']||r['VALOR TOTAL']||0)||0
+                km:          toNum(r['KM Atual']||r['KM ATUAL']),
+                kmPerc:      toNum(r['KM Percorrido']||r['KM PERCORRIDO']),
+                litros:      toNum(r['Litros']||r['LITROS']),
+                preco:       toNum(r['Preco por L']||r['PREÇO R$/L']),
+                valor:       toNum(r['Valor Total']||r['VALOR TOTAL']),
+                fornecedor:  String(r['FORNECEDOR']||r['Fornecedor']||'').trim()
               };
             }).filter(function(r){ return r.tag && r.data; });
 
-            // Calcular kmPerc quando vier zerado
             mapeados.sort(function(a,b){ return String(a.id).localeCompare(String(b.id)); });
             var kmUlt={};
             mapeados.forEach(function(r){
@@ -281,7 +312,7 @@
     function fDataBR(s){if(!s||s.length<10)return'—';var p=s.substring(0,10).split('-');return p[2]+'/'+p[1]+'/'+p[0];}
     function fmt(d){return d.toISOString().split('T')[0];}
 
-    var iniAtual='', fimAtual='';
+    var iniAtual='', fimAtual='', fornAtual='';
     var chartGasto=null, chartKm=null, chartMedia=null;
 
     function setPeriodo(p,btn){
@@ -325,16 +356,33 @@
       return{tag:tag,placa:PLACAS[tag],regs:regs.length,litros:litros,valor:valor,totalKm:totalKm,media:media,rkm:rkm,combMain:combMain};
     }
 
+    function popularFornecedores(){
+      var sel=document.getElementById('f-forn');
+      var atual=sel.value;
+      var forn=[...new Set(TODOS_RECS.map(function(r){return r.fornecedor;}).filter(Boolean))].sort();
+      sel.innerHTML='<option value="">Todos</option>'+forn.map(function(f){return '<option value="'+f+'"'+(f===atual?' selected':'')+'>'+f+'</option>';}).join('');
+    }
+
+    function aplicarFornecedor(){
+      fornAtual=document.getElementById('f-forn').value;
+      renderizar(iniAtual,fimAtual);
+    }
+
     function renderizar(ini,fim){
-      var lista=TODOS_RECS.filter(function(r){
+      // Lista filtrada só por período (base para total geral — ignora fornecedor)
+      var listaPeriodo=TODOS_RECS.filter(function(r){
         if(!r.data) return false;
         var d=r.data.substring(0,10);
         return (!ini||d>=ini)&&(!fim||d<=fim);
       });
+      // Lista filtrada por período + fornecedor (base para todos os outros cards/gráficos)
+      var lista=fornAtual?listaPeriodo.filter(function(r){return r.fornecedor===fornAtual;}):listaPeriodo;
       var lbl=ini==='2000-01-01'?'Todo o período · '+lista.length+' registros':fDataBR(ini)+' até '+fDataBR(fim)+' · '+lista.length+' registro'+(lista.length!==1?'s':'');
+      if(fornAtual) lbl+=' · <span style="color:var(--amarelo-dark);font-weight:600">'+fornAtual+'</span>';
       document.getElementById('periodo-ativo').innerHTML='<strong>'+lbl+'</strong>';
       document.getElementById('topbar-periodo').textContent=ini==='2000-01-01'?'Todo o período':fDataBR(ini)+' — '+fDataBR(fim);
 
+      // Totais filtrados (período + fornecedor)
       var totalGasto=lista.reduce(function(s,r){return s+(r.valor||0);},0);
       var totalLitros=lista.reduce(function(s,r){return s+(r.litros||0);},0);
       var totalKm=lista.filter(function(r){return r.kmPerc>0;}).reduce(function(s,r){return s+(r.kmPerc||0);},0);
@@ -343,6 +391,9 @@
       document.getElementById('m-litros').textContent=fNum(totalLitros,0)+' L';
       document.getElementById('m-km').textContent=fNum(totalKm,0)+' km';
       document.getElementById('m-media').textContent=fNum(mediaFrota,1)+' km/L';
+      // Total geral = só filtro de período, ignora fornecedor
+      var totalGeral=listaPeriodo.reduce(function(s,r){return s+(r.valor||0);},0);
+      document.getElementById('m-gasto-geral').textContent=fBRL(totalGeral);
 
       var veiculos=TAGS.map(function(t){return calcVeiculo(lista,t);});
       var somaGasto=veiculos.reduce(function(s,v){return s+v.valor;},0);
@@ -357,7 +408,7 @@
       var legHTML=TAGS.map(function(t,i){return '<span class="leg-item"><span class="leg-sq" style="background:'+CORES[i]+'"></span>'+t+'</span>';}).join('');
       ['leg-gasto','leg-km','leg-media'].forEach(function(id){document.getElementById(id).innerHTML=legHTML;});
 
-      var gastoData=veiculos.map(function(v){return Math.round(v.valor);});
+      var gastoData=veiculos.map(function(v){return +v.valor.toFixed(2);});
       var kmData=veiculos.map(function(v){return Math.round(v.totalKm);});
       var mediaData=veiculos.map(function(v){return +v.media.toFixed(2);});
 
@@ -379,6 +430,7 @@
 
     function exportarCSV(){
       var lista=TODOS_RECS.filter(function(r){var d=(r.data||'').substring(0,10);return(!iniAtual||d>=iniAtual)&&(!fimAtual||d<=fimAtual);});
+      if(fornAtual) lista=lista.filter(function(r){return r.fornecedor===fornAtual;});
       var veiculos=TAGS.map(function(t){return calcVeiculo(lista,t);});
       var h='TAG;Placa;Abastecimentos;Litros;KM Percorrido;Média km/L;R$/km;Total Gasto';
       var rows=veiculos.map(function(v){return[v.tag,v.placa,v.regs,v.litros.toFixed(2),Math.round(v.totalKm),v.media.toFixed(2),v.rkm>0?v.rkm.toFixed(3):'',v.valor.toFixed(2)].join(';');});
@@ -390,6 +442,7 @@
 
     async function inicializar(){
       await carregarDados();
+      popularFornecedores();
       var hoje=new Date();
       var ini=fmt(new Date(hoje.getFullYear(),hoje.getMonth(),1));
       var fim=fmt(hoje);
