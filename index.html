@@ -209,9 +209,7 @@
       if(!v) setTimeout(function(){document.getElementById('loading-bar').style.width='0';},400);
     }
 
-    // -----------------------------------------------------------------------
-    // FIX: parser CSV robusto — respeita campos entre aspas com vírgula interna
-    // -----------------------------------------------------------------------
+    // Parser CSV robusto — respeita campos entre aspas com vírgula interna
     function splitCSVLine(line){
       var result=[], cur='', inQuote=false;
       for(var i=0;i<line.length;i++){
@@ -240,13 +238,10 @@
       return rows;
     }
 
-    // -----------------------------------------------------------------------
-    // FIX: parse numérico tolerando vírgula decimal (padrão pt-BR)
-    // -----------------------------------------------------------------------
+    // Parse numérico tolerando vírgula decimal (padrão pt-BR)
     function toNum(v){
       return parseFloat(String(v||'0').replace(',','.'))||0;
     }
-    // -----------------------------------------------------------------------
 
     function normalizarData(val){
       if(!val) return '';
@@ -275,6 +270,8 @@
                 motorista:   String(r['Motorista']||r['MOTORISTA']||'').trim(),
                 combustivel: String(r['Combustivel']||r['COMBUSTÍVEL']||r['Combustivel']||'').trim(),
                 km:          toNum(r['KM Atual']||r['KM ATUAL']),
+                // FIX: usa exclusivamente o KM PERCORRIDO calculado na planilha.
+                // Removido o recálculo no browser que causava médias infladas.
                 kmPerc:      toNum(r['KM Percorrido']||r['KM PERCORRIDO']),
                 litros:      toNum(r['Litros']||r['LITROS']),
                 preco:       toNum(r['Preco por L']||r['PREÇO R$/L']),
@@ -283,18 +280,9 @@
               };
             }).filter(function(r){ return r.tag && r.data; });
 
-            mapeados.sort(function(a,b){ return String(a.id).localeCompare(String(b.id)); });
-            var kmUlt={};
-            mapeados.forEach(function(r){
-              if(r.km>0){
-                if(r.kmPerc<=0 && kmUlt[r.tag] && kmUlt[r.tag]>0){
-                  r.kmPerc=r.km-kmUlt[r.tag];
-                  if(r.kmPerc<0) r.kmPerc=0;
-                }
-                kmUlt[r.tag]=r.km;
-              }
-            });
-            mapeados.sort(function(a,b){ return String(b.id).localeCompare(String(a.id)); });
+            // Ordena por data decrescente para exibição (sem recalcular kmPerc)
+            mapeados.sort(function(a,b){ return b.data.localeCompare(a.data); });
+
             TODOS_RECS = mapeados;
             setLoading(false);
             resolve();
@@ -342,12 +330,13 @@
 
     function calcVeiculo(lista,tag){
       var regs=lista.filter(function(r){return r.tag===tag;});
+      // FIX: usa kmPerc>0 — não recalcula. Registros com kmPerc=0 (outliers/erros) são ignorados.
       var regsComKm=regs.filter(function(r){return r.kmPerc>0;});
-      var totalKm=regsComKm.reduce(function(s,r){return s+(r.kmPerc||0);},0);
-      var litrosComKm=regsComKm.reduce(function(s,r){return s+(r.litros||0);},0);
-      var valorComKm=regsComKm.reduce(function(s,r){return s+(r.valor||0);},0);
-      var valor=regs.reduce(function(s,r){return s+(r.valor||0);},0);
-      var litros=regs.reduce(function(s,r){return s+(r.litros||0);},0);
+      var totalKm=regsComKm.reduce(function(s,r){return s+r.kmPerc;},0);
+      var litrosComKm=regsComKm.reduce(function(s,r){return s+r.litros;},0);
+      var valorComKm=regsComKm.reduce(function(s,r){return s+r.valor;},0);
+      var valor=regs.reduce(function(s,r){return s+r.valor;},0);
+      var litros=regs.reduce(function(s,r){return s+r.litros;},0);
       var media=litrosComKm>0&&totalKm>0?totalKm/litrosComKm:0;
       var rkm=valorComKm>0&&totalKm>0?valorComKm/totalKm:0;
       var combFreq={};
@@ -369,30 +358,26 @@
     }
 
     function renderizar(ini,fim){
-      // Lista filtrada só por período (base para total geral — ignora fornecedor)
       var listaPeriodo=TODOS_RECS.filter(function(r){
         if(!r.data) return false;
         var d=r.data.substring(0,10);
         return (!ini||d>=ini)&&(!fim||d<=fim);
       });
-      // Lista filtrada por período + fornecedor (base para todos os outros cards/gráficos)
       var lista=fornAtual?listaPeriodo.filter(function(r){return r.fornecedor===fornAtual;}):listaPeriodo;
       var lbl=ini==='2000-01-01'?'Todo o período · '+lista.length+' registros':fDataBR(ini)+' até '+fDataBR(fim)+' · '+lista.length+' registro'+(lista.length!==1?'s':'');
       if(fornAtual) lbl+=' · <span style="color:var(--amarelo-dark);font-weight:600">'+fornAtual+'</span>';
       document.getElementById('periodo-ativo').innerHTML='<strong>'+lbl+'</strong>';
       document.getElementById('topbar-periodo').textContent=ini==='2000-01-01'?'Todo o período':fDataBR(ini)+' — '+fDataBR(fim);
 
-      // Totais filtrados (período + fornecedor)
-      var totalGasto=lista.reduce(function(s,r){return s+(r.valor||0);},0);
-      var totalLitros=lista.reduce(function(s,r){return s+(r.litros||0);},0);
-      var totalKm=lista.filter(function(r){return r.kmPerc>0;}).reduce(function(s,r){return s+(r.kmPerc||0);},0);
+      var totalGasto=lista.reduce(function(s,r){return s+r.valor;},0);
+      var totalLitros=lista.reduce(function(s,r){return s+r.litros;},0);
+      var totalKm=lista.filter(function(r){return r.kmPerc>0;}).reduce(function(s,r){return s+r.kmPerc;},0);
       var mediaFrota=totalLitros>0&&totalKm>0?totalKm/totalLitros:0;
       document.getElementById('m-gasto').textContent=fBRL(totalGasto);
       document.getElementById('m-litros').textContent=fNum(totalLitros,0)+' L';
       document.getElementById('m-km').textContent=fNum(totalKm,0)+' km';
       document.getElementById('m-media').textContent=fNum(mediaFrota,1)+' km/L';
-      // Total geral = só filtro de período, ignora fornecedor
-      var totalGeral=listaPeriodo.reduce(function(s,r){return s+(r.valor||0);},0);
+      var totalGeral=listaPeriodo.reduce(function(s,r){return s+r.valor;},0);
       document.getElementById('m-gasto-geral').textContent=fBRL(totalGeral);
 
       var veiculos=TAGS.map(function(t){return calcVeiculo(lista,t);});
