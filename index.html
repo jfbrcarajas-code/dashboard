@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8"/>
@@ -61,7 +61,8 @@
     .card{background:var(--cinza-card);border:1px solid var(--cinza-borda);border-radius:var(--radius-lg);padding:1.125rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
     .card-title{font-size:11px;font-weight:600;color:var(--texto-sec);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;display:flex;align-items:center;gap:6px}
     .card-title i{font-size:14px;color:var(--azul)}
-    .cards-veiculo{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .cards-veiculo{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+    @media(max-width:1050px){.cards-veiculo{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:860px){.cards-veiculo{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:480px){.cards-veiculo{grid-template-columns:1fr}}
     .cv-card{background:#fff;border:1px solid var(--cinza-borda);border-radius:var(--radius-lg);padding:1rem}
@@ -100,7 +101,6 @@
 </head>
 <body>
   <div class="loading-bar" id="loading-bar"></div>
-
   <div class="topbar">
     <div class="topbar-left">
       <div class="topbar-logo"><i class="ti ti-chart-bar"></i></div>
@@ -111,13 +111,12 @@
     </div>
     <span style="font-size:12px;color:rgba(255,255,255,.6)" id="topbar-periodo"></span>
   </div>
-
   <div class="container">
     <div class="filtro-section">
       <div class="filtro-header">
         <div>
           <p class="db-title">Análise de frota</p>
-          <p class="db-sub">Veículos JJ29 · JJ30 · JJ70 · JJ71</p>
+          <p class="db-sub">Veículos JJ29 · JJ30 · JJ70 · JJ70A · JJ71</p>
         </div>
         <div class="filtro-right">
           <div class="periodo-bar">
@@ -143,7 +142,6 @@
         </div>
       </div>
     </div>
-
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label"><i class="ti ti-currency-dollar"></i> Total gasto</div><div class="stat-value" id="m-gasto">—</div><div class="stat-sub">período · fornecedor</div></div>
       <div class="stat-card yellow"><div class="stat-label"><i class="ti ti-gas-station"></i> Total litros</div><div class="stat-value" id="m-litros">—</div><div class="stat-sub">abastecidos</div></div>
@@ -151,12 +149,10 @@
       <div class="stat-card white"><div class="stat-label"><i class="ti ti-chart-line"></i> Média frota</div><div class="stat-value" id="m-media">—</div><div class="stat-sub">km/L geral</div></div>
       <div class="stat-card geral"><div class="stat-label"><i class="ti ti-sum"></i> Total geral</div><div class="stat-value" id="m-gasto-geral">—</div><div class="stat-sub">todos fornecedores</div></div>
     </div>
-
     <div class="card">
       <div class="card-title"><i class="ti ti-car"></i> Desempenho por veículo</div>
       <div class="cards-veiculo" id="cards-veiculo"></div>
     </div>
-
     <div class="charts-grid">
       <div class="card" style="margin-bottom:0">
         <div class="card-title"><i class="ti ti-chart-bar"></i> Gasto (R$)</div>
@@ -175,7 +171,6 @@
       </div>
     </div>
     <div style="margin-bottom:1.25rem"></div>
-
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
         <div class="card-title" style="margin:0"><i class="ti ti-list"></i> Detalhamento por veículo</div>
@@ -188,27 +183,21 @@
         </table>
       </div>
     </div>
-
     <div class="footer"><strong>JF Brasil Engenharia</strong> · Complexo Carajás<br>Dashboard de Controle de Combustível · GGES / Geotecnia Operacional</div>
   </div>
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
     var SHEET_ID = '1mEQkC9lXUiP5ru3Bj0Qsahocn-pXbMWeO9dWtsTVszQ';
     var ABA      = 'Registros';
     var CSV_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(ABA);
-
-    var PLACAS = {JJ29:'SIV6B53',JJ30:'RVK0J68',JJ70:'QXO5J07',JJ71:'SYT2C06'};
-    var TAGS   = ['JJ29','JJ30','JJ70','JJ71'];
-    var CORES  = ['#28334A','#378ADD','#1D9E75','#BA7517'];
-
+    var PLACAS = {JJ29:'SIV6B53',JJ30:'RVK0J68',JJ70:'QXO5J07',JJ70A:'TDW1C39',JJ71:'SYT2C06'};
+    var TAGS   = ['JJ29','JJ30','JJ70','JJ70A','JJ71'];
+    var CORES  = ['#28334A','#378ADD','#1D9E75','#7B4F9E','#BA7517'];
     var TODOS_RECS = [];
-
     function setLoading(v){
       document.getElementById('loading-bar').style.width = v ? '70%' : '100%';
       if(!v) setTimeout(function(){document.getElementById('loading-bar').style.width='0';},400);
     }
-
     // Parser CSV robusto — respeita campos entre aspas com vírgula interna
     function splitCSVLine(line){
       var result=[], cur='', inQuote=false;
@@ -221,7 +210,6 @@
       result.push(cur.trim());
       return result;
     }
-
     function parseCSV(text){
       var lines = text.trim().split('\n');
       if(lines.length < 2) return [];
@@ -237,12 +225,10 @@
       }
       return rows;
     }
-
     // Parse numérico tolerando vírgula decimal (padrão pt-BR)
     function toNum(v){
       return parseFloat(String(v||'0').replace(',','.'))||0;
     }
-
     function normalizarData(val){
       if(!val) return '';
       var s = String(val).trim();
@@ -253,7 +239,6 @@
       if(s.indexOf('T')>-1) return s.substring(0,10);
       return s.substring(0,10);
     }
-
     function carregarDados(){
       return new Promise(function(resolve){
         setLoading(true);
@@ -279,10 +264,8 @@
                 fornecedor:  String(r['FORNECEDOR']||r['Fornecedor']||'').trim()
               };
             }).filter(function(r){ return r.tag && r.data; });
-
             // Ordena por data decrescente para exibição (sem recalcular kmPerc)
             mapeados.sort(function(a,b){ return b.data.localeCompare(a.data); });
-
             TODOS_RECS = mapeados;
             setLoading(false);
             resolve();
@@ -294,15 +277,12 @@
           });
       });
     }
-
     function fBRL(v){return(+v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
     function fNum(v,d){d=d||0;return(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});}
     function fDataBR(s){if(!s||s.length<10)return'—';var p=s.substring(0,10).split('-');return p[2]+'/'+p[1]+'/'+p[0];}
     function fmt(d){return d.toISOString().split('T')[0];}
-
     var iniAtual='', fimAtual='', fornAtual='';
     var chartGasto=null, chartKm=null, chartMedia=null;
-
     function setPeriodo(p,btn){
       document.querySelectorAll('.pb').forEach(function(b){b.classList.remove('on');});
       btn.classList.add('on');
@@ -317,7 +297,6 @@
       iniAtual=ini;fimAtual=fim;
       renderizar(ini,fim);
     }
-
     function aplicarIntervalo(){
       document.querySelectorAll('.pb').forEach(function(b){b.classList.remove('on');});
       var ini=document.getElementById('f-ini').value;
@@ -327,7 +306,6 @@
       iniAtual=ini;fimAtual=fim;
       renderizar(ini,fim);
     }
-
     function calcVeiculo(lista,tag){
       var regs=lista.filter(function(r){return r.tag===tag;});
       // FIX: usa kmPerc>0 — não recalcula. Registros com kmPerc=0 (outliers/erros) são ignorados.
@@ -344,19 +322,16 @@
       var combMain=Object.entries(combFreq).sort(function(a,b){return b[1]-a[1];})[0]?.[0]||'—';
       return{tag:tag,placa:PLACAS[tag],regs:regs.length,litros:litros,valor:valor,totalKm:totalKm,media:media,rkm:rkm,combMain:combMain};
     }
-
     function popularFornecedores(){
       var sel=document.getElementById('f-forn');
       var atual=sel.value;
       var forn=[...new Set(TODOS_RECS.map(function(r){return r.fornecedor;}).filter(Boolean))].sort();
       sel.innerHTML='<option value="">Todos</option>'+forn.map(function(f){return '<option value="'+f+'"'+(f===atual?' selected':'')+'>'+f+'</option>';}).join('');
     }
-
     function aplicarFornecedor(){
       fornAtual=document.getElementById('f-forn').value;
       renderizar(iniAtual,fimAtual);
     }
-
     function renderizar(ini,fim){
       var listaPeriodo=TODOS_RECS.filter(function(r){
         if(!r.data) return false;
@@ -368,7 +343,6 @@
       if(fornAtual) lbl+=' · <span style="color:var(--amarelo-dark);font-weight:600">'+fornAtual+'</span>';
       document.getElementById('periodo-ativo').innerHTML='<strong>'+lbl+'</strong>';
       document.getElementById('topbar-periodo').textContent=ini==='2000-01-01'?'Todo o período':fDataBR(ini)+' — '+fDataBR(fim);
-
       var totalGasto=lista.reduce(function(s,r){return s+r.valor;},0);
       var totalLitros=lista.reduce(function(s,r){return s+r.litros;},0);
       var totalKm=lista.filter(function(r){return r.kmPerc>0;}).reduce(function(s,r){return s+r.kmPerc;},0);
@@ -379,40 +353,30 @@
       document.getElementById('m-media').textContent=fNum(mediaFrota,1)+' km/L';
       var totalGeral=listaPeriodo.reduce(function(s,r){return s+r.valor;},0);
       document.getElementById('m-gasto-geral').textContent=fBRL(totalGeral);
-
       var veiculos=TAGS.map(function(t){return calcVeiculo(lista,t);});
       var somaGasto=veiculos.reduce(function(s,v){return s+v.valor;},0);
       var baseGasto=somaGasto>0?somaGasto:0.01;
-
       document.getElementById('cards-veiculo').innerHTML=veiculos.map(function(v,i){
         var pct=Math.round(v.valor/baseGasto*100);
         var bcls=v.combMain==='Diesel'?'badge-d':v.combMain==='Gasolina'?'badge-g':'badge-e';
         return '<div class="cv-card"><div class="cv-top"><div><div class="cv-tag">'+v.tag+'</div><div class="cv-placa">'+v.placa+'</div></div><span class="'+bcls+'">'+v.combMain+'</span></div><div class="cv-stats"><div class="cv-stat"><div class="cv-stat-val">'+fNum(v.media,1)+'</div><div class="cv-stat-lbl">km/L</div></div><div class="cv-stat"><div class="cv-stat-val">'+fNum(v.totalKm,0)+'</div><div class="cv-stat-lbl">km</div></div><div class="cv-stat"><div class="cv-stat-val" style="font-size:12px">'+fBRL(v.valor)+'</div><div class="cv-stat-lbl">gasto</div></div></div><div class="cv-bar-label"><span>participação no gasto</span><span>'+pct+'%</span></div><div class="cv-bar-track"><div class="cv-bar-fill" style="width:'+pct+'%;background:'+CORES[i]+'"></div></div></div>';
       }).join('');
-
       var legHTML=TAGS.map(function(t,i){return '<span class="leg-item"><span class="leg-sq" style="background:'+CORES[i]+'"></span>'+t+'</span>';}).join('');
       ['leg-gasto','leg-km','leg-media'].forEach(function(id){document.getElementById(id).innerHTML=legHTML;});
-
       var gastoData=veiculos.map(function(v){return +v.valor.toFixed(2);});
       var kmData=veiculos.map(function(v){return Math.round(v.totalKm);});
       var mediaData=veiculos.map(function(v){return +v.media.toFixed(2);});
-
       var baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+ctx.raw.toLocaleString('pt-BR');}}}},scales:{x:{grid:{display:false},ticks:{color:'#8e97a8',font:{size:11},autoSkip:false}},y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#8e97a8',font:{size:10}}}}};
-
       if(chartGasto)chartGasto.destroy();
       chartGasto=new Chart(document.getElementById('chart-gasto'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map(function(t,i){return{label:t,data:TAGS.map(function(_,j){return j===i?gastoData[i]:null;}),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false};})},options:Object.assign({},baseOpts,{scales:Object.assign({},baseOpts.scales,{y:Object.assign({},baseOpts.scales.y,{ticks:Object.assign({},baseOpts.scales.y.ticks,{callback:function(v){return'R$ '+v.toLocaleString('pt-BR');}})})})})});
-
       if(chartKm)chartKm.destroy();
       chartKm=new Chart(document.getElementById('chart-km'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map(function(t,i){return{label:t,data:TAGS.map(function(_,j){return j===i?kmData[i]:null;}),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false};})},options:Object.assign({},baseOpts,{scales:Object.assign({},baseOpts.scales,{y:Object.assign({},baseOpts.scales.y,{ticks:Object.assign({},baseOpts.scales.y.ticks,{callback:function(v){return v.toLocaleString('pt-BR');}})})})})});
-
       if(chartMedia)chartMedia.destroy();
       chartMedia=new Chart(document.getElementById('chart-media'),{type:'bar',data:{labels:TAGS,datasets:TAGS.map(function(t,i){return{label:t,data:TAGS.map(function(_,j){return j===i?mediaData[i]:null;}),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false};})},options:Object.assign({},baseOpts,{scales:Object.assign({},baseOpts.scales,{y:Object.assign({},baseOpts.scales.y,{ticks:Object.assign({},baseOpts.scales.y.ticks,{callback:function(v){return v+' km/L';}})})})})});
-
       var tbody=document.getElementById('dt-body');
       if(!lista.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Nenhum registro no período selecionado.</td></tr>';return;}
       tbody.innerHTML=veiculos.map(function(v){return '<tr><td><strong style="color:var(--azul)">'+v.tag+'</strong></td><td style="color:var(--texto-ter);font-size:12px;letter-spacing:.05em">'+v.placa+'</td><td>'+v.regs+'</td><td>'+fNum(v.litros,1)+' L</td><td>'+fNum(v.totalKm,0)+' km</td><td><strong>'+fNum(v.media,2)+' km/L</strong></td><td style="color:var(--texto-sec)">'+(v.rkm>0?'R$ '+v.rkm.toFixed(3)+'/km':'—')+'</td><td style="font-weight:600">'+fBRL(v.valor)+'</td></tr>';}).join('');
     }
-
     function exportarCSV(){
       var lista=TODOS_RECS.filter(function(r){var d=(r.data||'').substring(0,10);return(!iniAtual||d>=iniAtual)&&(!fimAtual||d<=fimAtual);});
       if(fornAtual) lista=lista.filter(function(r){return r.fornecedor===fornAtual;});
@@ -420,11 +384,10 @@
       var h='TAG;Placa;Abastecimentos;Litros;KM Percorrido;Média km/L;R$/km;Total Gasto';
       var rows=veiculos.map(function(v){return[v.tag,v.placa,v.regs,v.litros.toFixed(2),Math.round(v.totalKm),v.media.toFixed(2),v.rkm>0?v.rkm.toFixed(3):'',v.valor.toFixed(2)].join(';');});
       var csv=[h].concat(rows).join('\n');
-      var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+      var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
       var url=URL.createObjectURL(blob);
       var a=document.createElement('a');a.href=url;a.download='dashboard_combustivel.csv';a.click();URL.revokeObjectURL(url);
     }
-
     async function inicializar(){
       await carregarDados();
       popularFornecedores();
@@ -436,7 +399,6 @@
       iniAtual=ini;fimAtual=fim;
       renderizar(ini,fim);
     }
-
     inicializar();
   </script>
 </body>
