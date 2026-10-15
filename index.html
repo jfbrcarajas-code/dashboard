@@ -15,10 +15,18 @@
     body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--cinza-bg);color:var(--texto);font-size:15px;line-height:1.5;min-height:100vh}
     .topbar{background:var(--azul);color:#fff;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
     .topbar-left{display:flex;align-items:center;gap:10px}
+    .topbar-right{display:flex;align-items:center;gap:12px}
     .topbar-logo{width:32px;height:32px;background:var(--amarelo);border-radius:8px;display:flex;align-items:center;justify-content:center}
     .topbar-logo i{font-size:18px;color:var(--azul)}
     .topbar-title{font-size:15px;font-weight:600;color:#fff}
     .topbar-sub{font-size:11px;color:rgba(255,255,255,.6)}
+    .topbar-info{font-size:12px;color:rgba(255,255,255,.6);text-align:right;line-height:1.3}
+    .btn-atualizar{font-family:'IBM Plex Sans',sans-serif;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:6px 12px;border-radius:99px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;cursor:pointer;min-height:32px;transition:background .15s}
+    .btn-atualizar:hover{background:rgba(255,255,255,.1)}
+    .btn-atualizar:disabled{opacity:.5;cursor:default}
+    .btn-atualizar.girando i{animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:640px){.topbar-info{display:none}}
     .loading-bar{background:var(--amarelo);height:3px;width:0;position:fixed;top:0;left:0;z-index:9999;transition:width .3s}
     .container{max-width:1100px;margin:0 auto;padding:1.25rem 1rem}
     .filtro-section{background:var(--cinza-card);border:1px solid var(--cinza-borda);border-radius:var(--radius-lg);padding:1.125rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
@@ -109,7 +117,15 @@
         <div class="topbar-sub">JF Brasil · Carajás · Mariana</div>
       </div>
     </div>
-    <span style="font-size:12px;color:rgba(255,255,255,.6)" id="topbar-periodo"></span>
+    <div class="topbar-right">
+      <div class="topbar-info">
+        <div id="topbar-periodo"></div>
+        <div id="topbar-atualizado" style="font-size:11px"></div>
+      </div>
+      <button class="btn-atualizar" id="btn-atualizar" onclick="atualizarDados()" title="Recarregar dados da planilha">
+        <i class="ti ti-refresh"></i> Atualizar
+      </button>
+    </div>
   </div>
   <div class="container">
     <div class="filtro-section">
@@ -195,7 +211,12 @@
   <script>
     var SHEET_ID = '1mEQkC9lXUiP5ru3Bj0Qsahocn-pXbMWeO9dWtsTVszQ';
     var ABA      = 'Registros';
-    var CSV_URL  = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(ABA);
+    // URL gerada a cada leitura com parâmetro único → evita cache do Google e do navegador
+    function csvUrl(){
+      return 'https://docs.google.com/spreadsheets/d/' + SHEET_ID +
+             '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(ABA) +
+             '&_=' + Date.now();
+    }
     var PLACAS = {JJ29:'SIV6B53',JJ30:'RVK0J68',JJ70:'QXO5J07',JJ70A:'TDW1C39',JJ71:'SYT2C06',JFB0A45:'TDA0A45'};
     var TAGS   = ['JJ29','JJ30','JJ70','JJ70A','JJ71','JFB0A45'];
     var CORES  = ['#28334A','#378ADD','#1D9E75','#7B4F9E','#BA7517','#C2410C'];
@@ -274,7 +295,7 @@
     function carregarDados(){
       return new Promise(function(resolve){
         setLoading(true);
-        fetch(CSV_URL)
+        fetch(csvUrl(), { cache: 'no-store' })
           .then(function(r){ return r.text(); })
           .then(function(text){
             var rows = parseCSV(text);
@@ -303,15 +324,32 @@
             }).filter(function(r){ return r.tag && r.data; });
             mapeados.sort(function(a,b){ return b.data.localeCompare(a.data); });
             TODOS_RECS = mapeados;
+            var agora = new Date();
+            document.getElementById('topbar-atualizado').textContent =
+              'dados de ' + String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
             setLoading(false);
             resolve();
           })
           .catch(function(err){
             console.error('Erro ao carregar dados:', err);
+            document.getElementById('topbar-atualizado').textContent = 'erro ao carregar';
             setLoading(false);
             resolve();
           });
       });
+    }
+    // Botão "Atualizar": recarrega a planilha mantendo os filtros atuais
+    async function atualizarDados(){
+      var btn = document.getElementById('btn-atualizar');
+      btn.disabled = true; btn.classList.add('girando');
+      await carregarDados();
+      popularLocalidades();
+      popularFornecedores();
+      // se a opção selecionada deixou de existir, volta para "Todas/Todos"
+      locAtual  = document.getElementById('f-loc').value;
+      fornAtual = document.getElementById('f-forn').value;
+      renderizar(iniAtual, fimAtual);
+      btn.disabled = false; btn.classList.remove('girando');
     }
     function fBRL(v){return(+v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
     function fNum(v,d){d=d||0;return(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});}
