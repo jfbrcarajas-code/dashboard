@@ -46,6 +46,15 @@
     .btn-filtrar:hover{background:var(--azul-light);border-color:var(--azul)}
     .periodo-ativo{font-size:12px;color:var(--texto-sec);text-align:right}
     .periodo-ativo strong{color:var(--azul)}
+    /* SELETOR DE VEÍCULOS */
+    .veic-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+    .veic-chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+    .vchip{font-family:'IBM Plex Sans',sans-serif;font-size:12px;padding:4px 11px;border-radius:99px;border:1px solid var(--cinza-borda2);background:#fff;color:var(--texto-ter);cursor:pointer;min-height:30px;display:inline-flex;align-items:center;gap:6px;transition:background .15s,border-color .15s,color .15s}
+    .vchip:hover{background:var(--cinza-bg)}
+    .vchip .dot{width:9px;height:9px;border-radius:50%;background:var(--cinza-borda2);flex-shrink:0;transition:background .15s}
+    .vchip.on{border-color:var(--azul);background:var(--azul-light);color:var(--azul);font-weight:600}
+    .vchip.on .dot{background:var(--c)}
+    .vlink{font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:var(--azul-mid);background:none;border:none;cursor:pointer;text-decoration:underline;padding:2px 4px}
     .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1.25rem}
     @media(max-width:860px){.stats-grid{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:640px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
@@ -69,10 +78,12 @@
     .card{background:var(--cinza-card);border:1px solid var(--cinza-borda);border-radius:var(--radius-lg);padding:1.125rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
     .card-title{font-size:11px;font-weight:600;color:var(--texto-sec);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;display:flex;align-items:center;gap:6px}
     .card-title i{font-size:14px;color:var(--azul)}
-    /* 7 veículos → 3 colunas (3 + 3 + 1) */
+    .card-title .cv-contagem{font-weight:500;text-transform:none;letter-spacing:0;color:var(--texto-ter)}
+    /* Só os veículos selecionados e com registros no período → 3 colunas */
     .cards-veiculo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
     @media(max-width:860px){.cards-veiculo{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:480px){.cards-veiculo{grid-template-columns:1fr}}
+    .cards-veiculo .empty{grid-column:1 / -1}
     .cv-card{background:#fff;border:1px solid var(--cinza-borda);border-radius:var(--radius-lg);padding:1rem}
     .cv-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
     .cv-tag{font-size:15px;font-weight:600;color:var(--azul)}
@@ -148,6 +159,12 @@
             <input type="date" id="f-fim" class="int-input"/>
             <button class="btn-filtrar" onclick="aplicarIntervalo()"><i class="ti ti-search"></i> Filtrar</button>
           </div>
+          <div class="veic-row">
+            <span class="int-label"><i class="ti ti-car" style="font-size:13px;vertical-align:-2px"></i> Veículos:</span>
+            <div class="veic-chips" id="f-veic"></div>
+            <button type="button" class="vlink" onclick="selecionarTodos(true)">Todos</button>
+            <button type="button" class="vlink" onclick="selecionarTodos(false)">Nenhum</button>
+          </div>
           <div class="forn-row">
             <span class="int-label"><i class="ti ti-map-pin" style="font-size:13px;vertical-align:-2px"></i> Localidade:</span>
             <select id="f-loc" class="forn-select" onchange="aplicarLocalidade()">
@@ -172,7 +189,7 @@
       <div class="stat-card geral"><div class="stat-label"><i class="ti ti-sum"></i> Total geral</div><div class="stat-value" id="m-gasto-geral">—</div><div class="stat-sub">todos fornecedores</div></div>
     </div>
     <div class="card">
-      <div class="card-title"><i class="ti ti-car"></i> Desempenho por veículo</div>
+      <div class="card-title"><i class="ti ti-car"></i> Desempenho por veículo <span class="cv-contagem" id="cv-contagem"></span></div>
       <div class="cards-veiculo" id="cards-veiculo"></div>
     </div>
     <div class="charts-grid">
@@ -219,10 +236,49 @@
     }
     var PLACAS = {JJ29:'SIV6B53',JJ30:'RVK0J68',JJ70:'QXO5J07',JJ70A:'TDW1C39',JJ71:'SYT2C06',JJ71A:'TDW9C10',JFB0A45:'TDA0A45'};
     var TAGS   = ['JJ29','JJ30','JJ70','JJ70A','JJ71','JJ71A','JFB0A45'];
+    // Cor fixa por veículo (mesma posição de TAGS) — não muda quando outro veículo some do painel
     var CORES  = ['#28334A','#378ADD','#1D9E75','#7B4F9E','#BA7517','#0E7490','#C2410C'];
     // Registros sem CIDADE/UF preenchidos são tratados como Carajás
     var LOC_PADRAO = 'Parauapebas/PA';
     var TODOS_RECS = [];
+
+    // ================================================================
+    //  SELEÇÃO DE VEÍCULOS — lembrada neste navegador
+    // ================================================================
+    var SEL_KEY = 'jfb_dash_veiculos_v1';
+    var SEL = carregarSelecao();
+    function carregarSelecao(){
+      try{
+        var salvo = JSON.parse(localStorage.getItem(SEL_KEY) || 'null');
+        if(Array.isArray(salvo)){
+          return new Set(salvo.filter(function(t){ return TAGS.indexOf(t) > -1; }));
+        }
+      }catch(e){}
+      return new Set(TAGS); // padrão: todos selecionados
+    }
+    function salvarSelecao(){
+      try{ localStorage.setItem(SEL_KEY, JSON.stringify([...SEL])); }catch(e){}
+    }
+    function corDe(tag){ return CORES[TAGS.indexOf(tag)] || '#8e97a8'; }
+    function renderChips(){
+      document.getElementById('f-veic').innerHTML = TAGS.map(function(t){
+        var on = SEL.has(t);
+        return '<button type="button" class="vchip'+(on?' on':'')+'" style="--c:'+corDe(t)+'" onclick="toggleVeiculo(\''+t+'\')" aria-pressed="'+on+'" title="'+PLACAS[t]+'">'+
+               '<span class="dot"></span>'+t+'</button>';
+      }).join('');
+    }
+    function toggleVeiculo(tag){
+      if(SEL.has(tag)) SEL.delete(tag); else SEL.add(tag);
+      salvarSelecao();
+      renderChips();
+      renderizar(iniAtual, fimAtual);
+    }
+    function selecionarTodos(todos){
+      SEL = todos ? new Set(TAGS) : new Set();
+      salvarSelecao();
+      renderChips();
+      renderizar(iniAtual, fimAtual);
+    }
 
     function setLoading(v){
       document.getElementById('loading-bar').style.width = v ? '70%' : '100%';
@@ -399,7 +455,13 @@
       regs.forEach(function(r){if(r.combustivel)combFreq[r.combustivel]=(combFreq[r.combustivel]||0)+1;});
       var top=Object.entries(combFreq).sort(function(a,b){return b[1]-a[1];})[0];
       var combMain=top?top[0]:'—';
-      return{tag:tag,placa:PLACAS[tag],regs:regs.length,litros:litros,valor:valor,totalKm:totalKm,media:media,rkm:rkm,combMain:combMain};
+      return{tag:tag,placa:PLACAS[tag],cor:corDe(tag),regs:regs.length,litros:litros,valor:valor,totalKm:totalKm,media:media,rkm:rkm,combMain:combMain};
+    }
+    // Veículos selecionados que têm pelo menos um abastecimento na lista filtrada
+    function veiculosAtivos(lista){
+      return TAGS.filter(function(t){return SEL.has(t);})
+                 .map(function(t){return calcVeiculo(lista,t);})
+                 .filter(function(v){return v.regs>0;});
     }
     function popularSelect(id, valores, rotuloTodos){
       var sel=document.getElementById(id);
@@ -424,7 +486,7 @@
       locAtual=document.getElementById('f-loc').value;
       renderizar(iniAtual,fimAtual);
     }
-    // Período + localidade (base do "Total geral")
+    // Período + localidade + veículos selecionados (base do "Total geral")
     function filtrarPeriodoLocal(ini,fim){
       return TODOS_RECS.filter(function(r){
         if(!r.data) return false;
@@ -432,6 +494,8 @@
         if(ini&&d<ini) return false;
         if(fim&&d>fim) return false;
         if(locAtual&&r.localidade!==locAtual) return false;
+        // veículo da frota desmarcado no seletor → fora de todos os números
+        if(TAGS.indexOf(r.tag)>-1&&!SEL.has(r.tag)) return false;
         return true;
       });
     }
@@ -439,10 +503,16 @@
       var l=filtrarPeriodoLocal(ini,fim);
       return fornAtual?l.filter(function(r){return r.fornecedor===fornAtual;}):l;
     }
+    function destruirGraficos(){
+      if(chartGasto){chartGasto.destroy();chartGasto=null;}
+      if(chartKm){chartKm.destroy();chartKm=null;}
+      if(chartMedia){chartMedia.destroy();chartMedia=null;}
+    }
     function renderizar(ini,fim){
       var listaPeriodo=filtrarPeriodoLocal(ini,fim);
       var lista=filtrarAtual(ini,fim);
       var lbl=ini==='2000-01-01'?'Todo o período · '+lista.length+' registros':fDataBR(ini)+' até '+fDataBR(fim)+' · '+lista.length+' registro'+(lista.length!==1?'s':'');
+      if(SEL.size<TAGS.length) lbl+=' · <span style="color:var(--azul-mid);font-weight:600">'+SEL.size+' de '+TAGS.length+' veículos</span>';
       if(locAtual) lbl+=' · <span style="color:var(--azul-mid);font-weight:600">'+esc(locAtual)+'</span>';
       if(fornAtual) lbl+=' · <span style="color:var(--amarelo-dark);font-weight:600">'+esc(fornAtual)+'</span>';
       document.getElementById('periodo-ativo').innerHTML='<strong>'+lbl+'</strong>';
@@ -459,18 +529,31 @@
       var totalGeral=listaPeriodo.reduce(function(s,r){return s+r.valor;},0);
       document.getElementById('m-gasto-geral').textContent=fBRL(totalGeral);
 
-      var veiculos=TAGS.map(function(t){return calcVeiculo(lista,t);});
+      // Só veículos selecionados e com registro no período/filtros
+      var veiculos=veiculosAtivos(lista);
+      document.getElementById('cv-contagem').textContent='· '+veiculos.length+' com registros de '+SEL.size+' selecionado'+(SEL.size!==1?'s':'');
+
+      if(!veiculos.length){
+        var msg=SEL.size===0?'Nenhum veículo selecionado. Escolha ao menos um no filtro "Veículos".':'Nenhum dos veículos selecionados teve abastecimento no período.';
+        document.getElementById('cards-veiculo').innerHTML='<div class="empty">'+msg+'</div>';
+        ['leg-gasto','leg-km','leg-media'].forEach(function(id){document.getElementById(id).innerHTML='';});
+        destruirGraficos();
+        document.getElementById('dt-body').innerHTML='<tr><td colspan="8" class="empty">'+msg+'</td></tr>';
+        return;
+      }
+
       var somaGasto=veiculos.reduce(function(s,v){return s+v.valor;},0);
       var baseGasto=somaGasto>0?somaGasto:0.01;
-      document.getElementById('cards-veiculo').innerHTML=veiculos.map(function(v,i){
+      document.getElementById('cards-veiculo').innerHTML=veiculos.map(function(v){
         var pct=Math.round(v.valor/baseGasto*100);
         var bcls=v.combMain==='Diesel'?'badge-d':v.combMain==='Gasolina'?'badge-g':'badge-e';
-        return '<div class="cv-card"><div class="cv-top"><div><div class="cv-tag">'+v.tag+'</div><div class="cv-placa">'+v.placa+'</div></div><span class="'+bcls+'">'+esc(v.combMain)+'</span></div><div class="cv-stats"><div class="cv-stat"><div class="cv-stat-val">'+fNum(v.media,1)+'</div><div class="cv-stat-lbl">km/L</div></div><div class="cv-stat"><div class="cv-stat-val">'+fNum(v.totalKm,0)+'</div><div class="cv-stat-lbl">km</div></div><div class="cv-stat"><div class="cv-stat-val" style="font-size:12px">'+fBRL(v.valor)+'</div><div class="cv-stat-lbl">gasto</div></div></div><div class="cv-bar-label"><span>participação no gasto</span><span>'+pct+'%</span></div><div class="cv-bar-track"><div class="cv-bar-fill" style="width:'+pct+'%;background:'+CORES[i]+'"></div></div></div>';
+        return '<div class="cv-card"><div class="cv-top"><div><div class="cv-tag">'+v.tag+'</div><div class="cv-placa">'+v.placa+'</div></div><span class="'+bcls+'">'+esc(v.combMain)+'</span></div><div class="cv-stats"><div class="cv-stat"><div class="cv-stat-val">'+fNum(v.media,1)+'</div><div class="cv-stat-lbl">km/L</div></div><div class="cv-stat"><div class="cv-stat-val">'+fNum(v.totalKm,0)+'</div><div class="cv-stat-lbl">km</div></div><div class="cv-stat"><div class="cv-stat-val" style="font-size:12px">'+fBRL(v.valor)+'</div><div class="cv-stat-lbl">gasto</div></div></div><div class="cv-bar-label"><span>participação no gasto</span><span>'+pct+'%</span></div><div class="cv-bar-track"><div class="cv-bar-fill" style="width:'+pct+'%;background:'+v.cor+'"></div></div></div>';
       }).join('');
 
-      var legHTML=TAGS.map(function(t,i){return '<span class="leg-item"><span class="leg-sq" style="background:'+CORES[i]+'"></span>'+t+'</span>';}).join('');
+      var legHTML=veiculos.map(function(v){return '<span class="leg-item"><span class="leg-sq" style="background:'+v.cor+'"></span>'+v.tag+'</span>';}).join('');
       ['leg-gasto','leg-km','leg-media'].forEach(function(id){document.getElementById(id).innerHTML=legHTML;});
 
+      var labels=veiculos.map(function(v){return v.tag;});
       var gastoData=veiculos.map(function(v){return +v.valor.toFixed(2);});
       var kmData=veiculos.map(function(v){return Math.round(v.totalKm);});
       var mediaData=veiculos.map(function(v){return +v.media.toFixed(2);});
@@ -478,24 +561,21 @@
       function mkChart(canvasId, dados, fmtTick){
         return new Chart(document.getElementById(canvasId),{
           type:'bar',
-          data:{labels:TAGS,datasets:TAGS.map(function(t,i){return{label:t,data:TAGS.map(function(_,j){return j===i?dados[i]:null;}),backgroundColor:CORES[i],borderRadius:5,borderSkipped:false};})},
+          data:{labels:labels,datasets:veiculos.map(function(v,i){return{label:v.tag,data:labels.map(function(_,j){return j===i?dados[i]:null;}),backgroundColor:v.cor,borderRadius:5,borderSkipped:false};})},
           options:Object.assign({},baseOpts,{scales:Object.assign({},baseOpts.scales,{y:Object.assign({},baseOpts.scales.y,{ticks:Object.assign({},baseOpts.scales.y.ticks,{callback:fmtTick})})})})
         });
       }
-      if(chartGasto)chartGasto.destroy();
+      destruirGraficos();
       chartGasto=mkChart('chart-gasto',gastoData,function(v){return'R$ '+v.toLocaleString('pt-BR');});
-      if(chartKm)chartKm.destroy();
       chartKm=mkChart('chart-km',kmData,function(v){return v.toLocaleString('pt-BR');});
-      if(chartMedia)chartMedia.destroy();
       chartMedia=mkChart('chart-media',mediaData,function(v){return v+' km/L';});
 
-      var tbody=document.getElementById('dt-body');
-      if(!lista.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Nenhum registro no período selecionado.</td></tr>';return;}
-      tbody.innerHTML=veiculos.map(function(v){return '<tr><td><strong style="color:var(--azul)">'+v.tag+'</strong></td><td style="color:var(--texto-ter);font-size:12px;letter-spacing:.05em">'+v.placa+'</td><td>'+v.regs+'</td><td>'+fNum(v.litros,1)+' L</td><td>'+fNum(v.totalKm,0)+' km</td><td><strong>'+fNum(v.media,2)+' km/L</strong></td><td style="color:var(--texto-sec)">'+(v.rkm>0?'R$ '+v.rkm.toFixed(3)+'/km':'—')+'</td><td style="font-weight:600">'+fBRL(v.valor)+'</td></tr>';}).join('');
+      document.getElementById('dt-body').innerHTML=veiculos.map(function(v){return '<tr><td><strong style="color:var(--azul)">'+v.tag+'</strong></td><td style="color:var(--texto-ter);font-size:12px;letter-spacing:.05em">'+v.placa+'</td><td>'+v.regs+'</td><td>'+fNum(v.litros,1)+' L</td><td>'+fNum(v.totalKm,0)+' km</td><td><strong>'+fNum(v.media,2)+' km/L</strong></td><td style="color:var(--texto-sec)">'+(v.rkm>0?'R$ '+v.rkm.toFixed(3)+'/km':'—')+'</td><td style="font-weight:600">'+fBRL(v.valor)+'</td></tr>';}).join('');
     }
     function exportarCSV(){
       var lista=filtrarAtual(iniAtual,fimAtual);
-      var veiculos=TAGS.map(function(t){return calcVeiculo(lista,t);});
+      var veiculos=veiculosAtivos(lista);
+      if(!veiculos.length){alert('Nenhum veículo selecionado com registros no período para exportar.');return;}
       var h='TAG;Placa;Abastecimentos;Litros;KM Percorrido;Média km/L;R$/km;Total Gasto';
       var rows=veiculos.map(function(v){return[v.tag,v.placa,v.regs,v.litros.toFixed(2),Math.round(v.totalKm),v.media.toFixed(2),v.rkm>0?v.rkm.toFixed(3):'',v.valor.toFixed(2)].join(';');});
       var csv=[h].concat(rows).join('\n');
@@ -504,6 +584,7 @@
       var a=document.createElement('a');a.href=url;a.download='dashboard_combustivel.csv';a.click();URL.revokeObjectURL(url);
     }
     async function inicializar(){
+      renderChips();
       await carregarDados();
       popularLocalidades();
       popularFornecedores();
