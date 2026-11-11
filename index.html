@@ -69,7 +69,7 @@
     .card{background:var(--cinza-card);border:1px solid var(--cinza-borda);border-radius:var(--radius-lg);padding:1.125rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
     .card-title{font-size:11px;font-weight:600;color:var(--texto-sec);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;display:flex;align-items:center;gap:6px}
     .card-title i{font-size:14px;color:var(--azul)}
-    /* 6 veículos → 3 colunas x 2 linhas */
+    /* 7 veículos → 3 colunas (3 + 3 + 1) */
     .cards-veiculo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
     @media(max-width:860px){.cards-veiculo{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:480px){.cards-veiculo{grid-template-columns:1fr}}
@@ -132,7 +132,7 @@
       <div class="filtro-header">
         <div>
           <p class="db-title">Análise de frota</p>
-          <p class="db-sub">Veículos JJ29 · JJ30 · JJ70 · JJ70A · JJ71 · JFB0A45</p>
+          <p class="db-sub">Veículos JJ29 · JJ30 · JJ70 · JJ70A · JJ71 · JJ71A · JFB0A45</p>
         </div>
         <div class="filtro-right">
           <div class="periodo-bar">
@@ -217,9 +217,9 @@
              '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(ABA) +
              '&_=' + Date.now();
     }
-    var PLACAS = {JJ29:'SIV6B53',JJ30:'RVK0J68',JJ70:'QXO5J07',JJ70A:'TDW1C39',JJ71:'SYT2C06',JFB0A45:'TDA0A45'};
-    var TAGS   = ['JJ29','JJ30','JJ70','JJ70A','JJ71','JFB0A45'];
-    var CORES  = ['#28334A','#378ADD','#1D9E75','#7B4F9E','#BA7517','#C2410C'];
+    var PLACAS = {JJ29:'SIV6B53',JJ30:'RVK0J68',JJ70:'QXO5J07',JJ70A:'TDW1C39',JJ71:'SYT2C06',JJ71A:'TDW9C10',JFB0A45:'TDA0A45'};
+    var TAGS   = ['JJ29','JJ30','JJ70','JJ70A','JJ71','JJ71A','JFB0A45'];
+    var CORES  = ['#28334A','#378ADD','#1D9E75','#7B4F9E','#BA7517','#0E7490','#C2410C'];
     // Registros sem CIDADE/UF preenchidos são tratados como Carajás
     var LOC_PADRAO = 'Parauapebas/PA';
     var TODOS_RECS = [];
